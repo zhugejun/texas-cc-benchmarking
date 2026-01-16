@@ -1,0 +1,15 @@
+[project]
+name = "texas-community-college-benchmarking"
+version = "0.1.0"
+description = "Texas Community College Benchmarking"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dagster>=1.12.11",
+    "dagster-dbt>=0.28.11",
+    "dagster-snowflake>=0.28.11",
+    "dagster-webserver>=1.12.11",
+    "dbt-snowflake>=1.11.1",
+    "pandas>=2.3.3",
+    "requests>=2.32.5",
+]
