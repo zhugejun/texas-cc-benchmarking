@@ -2,7 +2,45 @@
 
 A data pipeline for benchmarking community colleges in Texas.
 
-## Setup
+## Overview
+
+This project uses a modern data stack:
+
+```
+IPEDS Data → Dagster → Snowflake (RAW) → dbt → Snowflake (MARTS) → Analytics
+```
+
+### Architecture
+
+**Data Flow:**
+
+1. **Extract & Load (Dagster)**
+   - Downloads IPEDS CSV files from NCES
+   - Processes data using pandas
+   - Loads to Snowflake `RAW_IPEDS` schema
+
+2. **Transform (dbt)**
+   - **Staging**: Clean and standardize raw data (views)
+   - **Intermediate**: Business logic and joins (ephemeral CTEs)
+   - **Marts**: Final analytics tables (materialized tables)
+
+3. **Schemas**
+   - `RAW_IPEDS`: Raw IPEDS data (managed by Dagster)
+   - `STAGING`: Cleaned and typed data (dbt views)
+   - `INTERMEDIATE`: Reusable business logic (dbt ephemeral)
+   - `MARTS`: Analytics-ready tables (dbt tables)
+
+### Data Sources
+
+This project uses IPEDS (Integrated Postsecondary Education Data System) data from NCES:
+
+- **HD**: Institutional Characteristics
+- **C_A**: Completions by Award Level
+- **EFFY**: 12-Month Enrollment
+- **GR**: Graduation Rates
+- **SFA**: Student Financial Aid
+
+## Quick Start
 
 ### Prerequisites
 
@@ -114,3 +152,107 @@ dagster dev
 ```
 
 The Dagster UI should open at http://localhost:3000 (or your specified port).
+
+**Note:** Dagster automatically uses your dbt profile credentials from `~/.dbt/profiles.yml`, so no additional configuration is needed!
+
+### 4. Run the Pipeline
+
+Once everything is configured, you can run the complete data pipeline through Dagster:
+
+1. **Start Dagster UI:**
+
+   ```bash
+   cd dagster_pipelines
+   dagster dev
+   ```
+
+2. **Open the UI** at http://localhost:3000
+
+3. **Run the pipeline:**
+   - Navigate to **Assets** in the left sidebar
+   - You'll see two groups:
+     - **ipeds_ingestion**: Downloads and loads raw IPEDS data to Snowflake (partitioned by year)
+     - **dbt_transformations**: Runs dbt models to transform the data
+   - Each IPEDS asset is **partitioned by year** (2019-2024)
+
+**Download data for specific years:**
+
+- Click on any asset (e.g., `ipeds_institutional_characteristics`)
+- You'll see partitions for each year: `2019`, `2020`, `2021`, `2022`, `2023`, `2024`
+- Select the years you want to download (e.g., `2020-2024` for the last 5 years)
+- Click **Materialize selected partitions**
+
+**Download all available years:**
+
+- Select all assets in the ipeds_ingestion group
+- Click **Materialize all partitions**
+- This will download all years (2019-2024) for all datasets
+
+The pipeline will:
+
+1. Download IPEDS CSV files from NCES for selected years
+2. Extract data and load to Snowflake `RAW_IPEDS` schema
+3. Multiple years are stored in the same table with a `YEAR` column
+4. Run dbt transformations (staging → intermediate → marts)
+5. Create analytics-ready tables in the `MARTS` schema
+
+**Add more years:**
+
+To add more years to the partition definition, edit `dagster_pipelines/dagster_pipelines/assets.py`:
+
+```python
+ipeds_years_partitions = StaticPartitionsDefinition(
+    ["2018", "2019", "2020", "2021", "2022", "2023", "2024", "2025"]  # Add years as needed
+)
+```
+
+## Project Structure
+
+```
+texas-community-college-benchmarking/
+├── setup/
+│   └── snowflake_setup.sql       # Snowflake initialization script
+├── texas_cc_benchmarking/        # dbt project
+│   ├── models/
+│   │   ├── staging/              # Staging models (views)
+│   │   ├── intermediate/         # Intermediate models (ephemeral)
+│   │   └── marts/                # Final tables (materialized)
+│   ├── dbt_project.yml
+│   └── ...
+├── dagster/                      # Dagster pipelines (to be created)
+├── README.md
+└── pyproject.toml
+```
+
+## Development
+
+### Working with dbt
+
+```bash
+# Navigate to dbt project
+cd texas_cc_benchmarking
+
+# Test connection
+dbt debug
+
+# Create and run models
+dbt run
+
+# Test data quality
+dbt test
+
+# Generate documentation
+dbt docs generate
+dbt docs serve
+```
+
+### Next Steps
+
+Now that the data pipeline is set up, the next steps are to build out the dbt transformation layer:
+
+1. **Create dbt sources** - Define source tables in `models/sources.yml` that point to the RAW_IPEDS tables
+2. **Build staging models** - One model per source table to clean and standardize the data
+3. **Build intermediate models** - Business logic, calculations, and joins
+4. **Build marts** - Final analytics tables for Texas community college benchmarking
+5. **Add tests** - Data quality tests and documentation
+6. **Schedule pipeline** - Set up regular refreshes in Dagster (e.g., weekly, monthly)
