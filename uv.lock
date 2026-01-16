@@ -2342,7 +2342,9 @@ dependencies = [
     { name = "dagster-webserver" },
     { name = "dbt-snowflake" },
     { name = "pandas" },
+    { name = "pyyaml" },
     { name = "requests" },
+    { name = "snowflake-connector-python" },
 ]
 
 [package.metadata]
@@ -2353,7 +2355,9 @@ requires-dist = [
     { name = "dagster-webserver", specifier = ">=1.12.11" },
     { name = "dbt-snowflake", specifier = ">=1.11.1" },
     { name = "pandas", specifier = ">=2.3.3" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.32.5" },
+    { name = "snowflake-connector-python", specifier = ">=4.2.0" },
 ]
 
 [[package]]
