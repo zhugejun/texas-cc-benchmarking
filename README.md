@@ -91,4 +91,26 @@ This creates a `dagster_pipelines/` folder with:
 - Resources (for Snowflake connection)
 - Configuration files
 
-You'll build the actual data pipelines here later.
+**Configure profiles directory:**
+
+The scaffold command may not correctly set the dbt profiles directory. Update `dagster_pipelines/dagster_pipelines/project.py`:
+
+```python
+texas_cc_benchmarking_project = DbtProject(
+    project_dir=Path(__file__).joinpath("..", "..", "..", "texas_cc_benchmarking").resolve(),
+    packaged_project_dir=Path(__file__).joinpath("..", "..", "dbt-project").resolve(),
+    profiles_dir=Path.home() / ".dbt",  # Add this line
+)
+```
+
+**Verify Dagster setup:**
+
+```bash
+cd dagster_pipelines
+dagster dev
+
+# If port 3000 is already in use, specify a different port:
+# dagster dev --port 3001
+```
+
+The Dagster UI should open at http://localhost:3000 (or your specified port).
