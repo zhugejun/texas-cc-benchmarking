@@ -66,4 +66,29 @@ When prompted:
 - **Schema**: `STAGING`
 - **Threads**: `4` (default)
 
-Next, run `cd texas_cc_benchmarking` to enter the dbt project directory, and run `dbt debug` to verify the connection.
+**Verify the connection:**
+
+```bash
+cd texas_cc_benchmarking
+dbt debug
+```
+
+You should see "All checks passed!" at the end.
+
+### Dagster
+
+Initialize a Dagster project with dbt integration:
+
+```bash
+# From the project root (make sure you're in the parent directory)
+cd ..
+dagster-dbt project scaffold --project-name dagster_pipelines --dbt-project-dir ./texas_cc_benchmarking
+```
+
+This creates a `dagster_pipelines/` folder with:
+
+- Asset definitions
+- Resources (for Snowflake connection)
+- Configuration files
+
+You'll build the actual data pipelines here later.
