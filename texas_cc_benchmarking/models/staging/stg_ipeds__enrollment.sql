@@ -2,13 +2,23 @@
 -- enrollment by program, award level, and demographics
 
 with source as (
-    select * from {{ source ('raw_ipeds', 'effy_2024')}}
+    {{ dbt_utils.union_relations(
+        relations=[
+            source('raw_ipeds', 'effy_2020'),
+            source('raw_ipeds', 'effy_2021'),
+            source('raw_ipeds', 'effy_2022'),
+            source('raw_ipeds', 'effy_2023'),
+            source('raw_ipeds', 'effy_2024'),
+        ]
+    ) }}
 ),
+
 
 renamed as (
     select
         unitid,
         effyalev as student_level,
+        year,
 
         case effyalev
             when 1 then 'All students'
@@ -36,6 +46,7 @@ renamed as (
         efynralt as enrollment_nonresident_alien
 
     from source
+    where year = 2024
 )
 
 
