@@ -308,9 +308,7 @@ def main():
     for dataset in args.datasets:
         print(f'{dataset} - {DATASETS[dataset]}')
         
-        all_years_data = []
-        
-        # Download each year
+        # Download each year separately
         for year in years:
             # Skip HD if we already downloaded it for filtering
             if dataset == 'HD' and args.filter_texas and texas_cc_unitids:
@@ -343,20 +341,10 @@ def main():
                         # For other datasets, filter by UNITID
                         df = filter_by_unitids(df, texas_cc_unitids, dataset)
                 
-                all_years_data.append(df)
-        
-        # Combine all years
-        if all_years_data:
-            combined_df = pd.concat(all_years_data, ignore_index=True)
-            
-            # Save to file
-            output_file = output_dir / f'{dataset.lower()}.csv'
-            combined_df.to_csv(output_file, index=False)
-            
-            print(f'  [SUCCESS] Saved {len(combined_df):,} total rows to {output_file}')
-            print(f'  [INFO] Years included: {sorted(combined_df["YEAR"].unique())}')
-        else:
-            print(f'  [ERROR] No data downloaded for {dataset}')
+                # Save each year as a separate file
+                output_file = output_dir / f'{dataset.lower()}_{year}.csv'
+                df.to_csv(output_file, index=False)
+                print(f'  [SUCCESS] Saved {len(df):,} rows to {output_file}')
         
         print()
     
