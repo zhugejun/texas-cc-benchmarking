@@ -73,17 +73,57 @@ sources:
               - not_null
           - name: INSTNM
             description: 'Institution name'
+          - name: IALIAS
+            description: 'Institution name alias'
           - name: CITY
             description: 'City location of institution'
           - name: STABBR
             description: 'State abbreviation'
+          - name: ZIP
+            description: 'ZIP code'
+          - name: FIPS
+            description: 'FIPS state code'
+          - name: OBEREG
+            description: 'Bureau of Economic Analysis region code'
           - name: SECTOR
-            description: 'Institutional sector (4 = Public 2-year)'
+            description: 'Institutional sector (1-9)'
+          - name: ICLEVEL
+            description: 'Level of institution (1=4-year, 2=2-year, 3=Less-than-2-year)'
           - name: CONTROL
             description: 'Control of institution (1=Public, 2=Private nonprofit, 3=Private for-profit)'
+          - name: HLOFFER
+            description: 'Highest level of offering'
+          - name: UGOFFER
+            description: 'Undergraduate offering (1=Yes, 2=No)'
+          - name: GROFFER
+            description: 'Graduate offering (1=Yes, 2=No)'
+          - name: LOCALE
+            description: 'Degree of urbanization (locale code)'
+          - name: INSTSIZE
+            description: 'Institution size category'
+          - name: WEBADDR
+            description: 'Institution website URL'
+          - name: ADMINURL
+            description: 'Admissions office URL'
+          - name: FAIDURL
+            description: 'Financial aid office URL'
+          - name: APPLURL
+            description: 'Online application URL'
       
       - name: hd_2023
         description: 'Institutional Characteristics 2023'
+        columns: *hd_columns
+
+      - name: hd_2022
+        description: 'Institutional Characteristics 2022'
+        columns: *hd_columns
+
+      - name: hd_2021
+        description: 'Institutional Characteristics 2021'
+        columns: *hd_columns
+
+      - name: hd_2020
+        description: 'Institutional Characteristics 2020'
         columns: *hd_columns
 
       # enrollment
