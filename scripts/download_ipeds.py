@@ -281,7 +281,7 @@ def main():
     elif args.year:
         years = [args.year]
     else:
-        years = [2023]  # Default to 2023
+        years = [2024]
     
     # Determine output directory
     if args.output_dir:
