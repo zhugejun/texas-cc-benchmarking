@@ -1,0 +1,103 @@
+version: 2
+
+sources:
+  - name: raw_ipeds
+    description: 'Raw IPEDS data loaded directly from CSV files'
+    schema: RAW_IPEDS
+    database: TEXAS_CC
+
+    tables:
+      - name: HD
+        description: 'Institutional Characteristics (Directory Information)'
+        columns:
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+            tests:
+              - unique
+              - not_null
+          - name: INSTNM
+            description: 'Institution name'
+          - name: CITY
+            description: 'City location of institution'
+          - name: STABBR
+            description: 'State abbreviation'
+          - name: SECTOR
+            description: 'Institutional sector (4 = Public 2-year)'
+          - name: CONTROL
+            description: 'Control of institution (1=Public, 2=Private nonprofit, 3=Private for-profit)'
+
+      - name: c_a_2020
+        description: 'Completions by Award Level and CIP code (2020 data)'
+        columns: &c_a_columns
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: CIPCODE
+            description: 'Classification of Instructional Programs code'
+          - name: AWLEVEL
+            description: 'Award level code'
+          - name: MAJORNUM
+            description: 'Major number (1=first major, 2=second major)'
+          - name: CTOTALT
+            description: 'Total completions'
+          - name: CTOTALM
+            description: 'Total completions - men'
+          - name: CTOTALW
+            description: 'Total completions - women'
+          - name: CAIANT
+            description: 'Completions - American Indian or Alaska Native'
+          - name: CASIAT
+            description: 'Completions - Asian'
+          - name: CBKAAT
+            description: 'Completions - Black or African American'
+          - name: CHISPT
+            description: 'Completions - Hispanic or Latino'
+          - name: CNHPIT
+            description: 'Completions - Native Hawaiian or Pacific Islander'
+          - name: CWHITT
+            description: 'Completions - White'
+          - name: C2MORT
+            description: 'Completions - Two or more races'
+          - name: CUNKNT
+            description: 'Completions - Race/ethnicity unknown'
+          - name: CNRALT
+            description: 'Completions - Nonresident alien'
+
+      - name: c_a_2021
+        description: 'Completions by Award Level and CIP code (2021 data)'
+        columns: *c_a_columns
+
+      - name: c_a_2022
+        description: 'Completions by Award Level and CIP code (2022 data)'
+        columns: *c_a_columns
+
+      - name: c_a_2023
+        description: 'Completions by Award Level and CIP code (2023 data)'
+        columns: *c_a_columns
+
+      - name: c_a_2024
+        description: 'Completions by Award Level and CIP code (2024 data)'
+        columns: *c_a_columns
+
+      - name: EFFY
+        description: '12-Month Enrollment (unduplicated headcount)'
+        columns:
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: EFYTOTLT
+            description: 'Total 12-month enrollment'
+
+      - name: GR
+        description: 'Graduation Rates for first-time, full-time degree-seeking students'
+        columns:
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: GRTOTLT
+            description: 'Total graduation rate'
+
+      - name: SFA
+        description: 'Student Financial Aid information'
+        columns:
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: SCUGRAD
+            description: 'Number of undergraduates analyzed for financial aid'
