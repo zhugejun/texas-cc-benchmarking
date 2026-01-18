@@ -28,10 +28,23 @@ conn = snowflake.connector.connect(
 
 cursor = conn.cursor()
 
-# Create file format first
-print('Creating file format...')
+# Create file formats
+print('Creating file formats...')
+
+# Format for INFER_SCHEMA - needs PARSE_HEADER to read column names
 cursor.execute("""
-    CREATE OR REPLACE FILE FORMAT ipeds_csv_format
+    CREATE OR REPLACE FILE FORMAT ipeds_csv_infer
+        TYPE = 'CSV'
+        FIELD_DELIMITER = ','
+        PARSE_HEADER = TRUE
+        FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+        NULL_IF = ('', 'NULL')
+        ENCODING = 'UTF8'
+""")
+
+# Format for COPY INTO - needs SKIP_HEADER to skip header row when loading
+cursor.execute("""
+    CREATE OR REPLACE FILE FORMAT ipeds_csv_load
         TYPE = 'CSV'
         FIELD_DELIMITER = ','
         SKIP_HEADER = 1
@@ -40,7 +53,7 @@ cursor.execute("""
         ENCODING = 'UTF8'
         ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
 """)
-print('✓ File format created\n')
+print('✓ File formats created\n')
 
 # Get all CSV files
 seeds_dir = Path(__file__).parent.parent / 'texas_cc_benchmarking' / 'seeds'
@@ -65,7 +78,7 @@ for csv_file in csv_files:
                 FROM TABLE(
                     INFER_SCHEMA(
                         LOCATION => '@~/staged/{csv_file.name}',
-                        FILE_FORMAT => 'ipeds_csv_format'
+                        FILE_FORMAT => 'ipeds_csv_infer'
                     )
                 )
             )
@@ -75,7 +88,7 @@ for csv_file in csv_files:
         cursor.execute(f"""
             COPY INTO {table_name}
             FROM '@~/staged/{csv_file.name}'
-            FILE_FORMAT = ipeds_csv_format
+            FILE_FORMAT = ipeds_csv_load
             ON_ERROR = 'CONTINUE'
         """)
         
