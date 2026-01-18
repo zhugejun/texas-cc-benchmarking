@@ -1,9 +1,16 @@
 -- stg_ipeds__completions.sql
 -- awards/degrees conferred by program, award level, and demographics
--- let's work on 2024 data first
 
 with source as (
-    select * from {{ source('raw_ipeds', 'c_a_2024')}}
+    {{ dbt_utils.union_relations(
+        relations=[
+            source('raw_ipeds', 'c_a_2020'),
+            source('raw_ipeds', 'c_a_2021'),
+            source('raw_ipeds', 'c_a_2022'),
+            source('raw_ipeds', 'c_a_2023'),
+            source('raw_ipeds', 'c_a_2024'),
+        ]
+    ) }}
 ),
 
 renamed as (
@@ -11,6 +18,7 @@ renamed as (
         unitid,
         cipcode as cip_code,
         awlevel as award_level,
+        year,
 
         case awlevel
             when 2 then 'Certificates of at least 1 but less than 2 years'
@@ -43,10 +51,11 @@ renamed as (
         cwhitt as completions_white,
         c2mort as completions_two_or_more_races,
         cunknt as completions_unknown_race,
-        cnralt as completions_non_resident_alien
+        cnralt as completions_non_resident_alien,
 
     from source
-    where majornum = 1
+    where majornum = 1 -- first major only
+        and year = 2024
 )
 
 
