@@ -2,6 +2,12 @@
 -- Snowflake Setup Script for IPEDS Data
 -- Texas Community College Benchmarking Project
 -- ============================================
+-- 
+-- This script sets up the initial database structure.
+-- dbt will automatically create DBT_STAGING, DBT_INTERMEDIATE, 
+-- and DBT_MARTS schemas when you run `dbt run`.
+-- 
+-- ============================================
 
 -- 0. CREATE WAREHOUSE (if needed)
 -- ============================================
@@ -16,29 +22,23 @@ CREATE WAREHOUSE IF NOT EXISTS COMPUTE_WH
 
 USE WAREHOUSE COMPUTE_WH;
 
--- 1. CREATE DATABASE AND SCHEMAS
+-- 1. CREATE DATABASE
 -- ============================================
 CREATE DATABASE IF NOT EXISTS TEXAS_CC
     COMMENT = 'Texas Community College Benchmarking Database';
 
 USE DATABASE TEXAS_CC;
 
--- Create schemas following dbt best practices
+-- 2. CREATE RAW DATA SCHEMA
+-- ============================================
+-- This is the only schema we need to create manually.
+-- dbt will create schemas for STAGING, INTERMEDIATE, Marts automatically.
 CREATE SCHEMA IF NOT EXISTS RAW_IPEDS
-    COMMENT = 'Raw IPEDS data from downloads';
-
-CREATE SCHEMA IF NOT EXISTS STAGING
-    COMMENT = 'Staging area for initial transformations';
-
-CREATE SCHEMA IF NOT EXISTS INTERMEDIATE
-    COMMENT = 'Intermediate models (dbt)';
-
-CREATE SCHEMA IF NOT EXISTS MARTS
-    COMMENT = 'Final analytical marts for reporting';
+    COMMENT = 'Raw IPEDS data from downloads - loaded via Python script';
 
 USE SCHEMA RAW_IPEDS;
 
--- 2. CREATE FILE FORMAT
+-- 3. CREATE FILE FORMAT
 -- ============================================
 CREATE OR REPLACE FILE FORMAT ipeds_csv
     TYPE = 'CSV'
@@ -48,12 +48,12 @@ CREATE OR REPLACE FILE FORMAT ipeds_csv
     NULL_IF = ('', 'NULL', '.')
     ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE;
 
--- 3. CREATE STAGE
+-- 4. CREATE STAGE
 -- ============================================
 CREATE OR REPLACE STAGE ipeds_stage
     FILE_FORMAT = ipeds_csv;
 
--- 4. RAW TABLES
+-- 5. RAW TABLES
 -- ============================================
 -- Adding metadata columns (_loaded_at, _source_file) for data lineage
 
@@ -197,7 +197,7 @@ CREATE OR REPLACE TABLE SFA (
 );
 
 
--- 5. VERIFY SETUP
+-- 6. VERIFY SETUP
 -- ============================================
 -- List all tables in the RAW_IPEDS schema
 SHOW TABLES IN SCHEMA TEXAS_CC.RAW_IPEDS;
