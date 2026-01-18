@@ -7,25 +7,8 @@ sources:
     database: TEXAS_CC
 
     tables:
-      - name: HD
-        description: 'Institutional Characteristics (Directory Information)'
-        columns:
-          - name: UNITID
-            description: 'Unique identification number of the institution'
-            tests:
-              - unique
-              - not_null
-          - name: INSTNM
-            description: 'Institution name'
-          - name: CITY
-            description: 'City location of institution'
-          - name: STABBR
-            description: 'State abbreviation'
-          - name: SECTOR
-            description: 'Institutional sector (4 = Public 2-year)'
-          - name: CONTROL
-            description: 'Control of institution (1=Public, 2=Private nonprofit, 3=Private for-profit)'
 
+      # completions
       - name: c_a_2020
         description: 'Completions by Award Level and CIP code (2020 data)'
         columns: &c_a_columns
@@ -77,16 +60,83 @@ sources:
       - name: c_a_2024
         description: 'Completions by Award Level and CIP code (2024 data)'
         columns: *c_a_columns
+      
 
-      - name: EFFY
-        description: '12-Month Enrollment (unduplicated headcount)'
-        columns:
+      # institutional characteristics
+      - name: hd_2024
+        description: 'Institutional Characteristics (Directory Information) 2024'
+        columns: &hd_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
+            tests:
+              - unique
+              - not_null
+          - name: INSTNM
+            description: 'Institution name'
+          - name: CITY
+            description: 'City location of institution'
+          - name: STABBR
+            description: 'State abbreviation'
+          - name: SECTOR
+            description: 'Institutional sector (4 = Public 2-year)'
+          - name: CONTROL
+            description: 'Control of institution (1=Public, 2=Private nonprofit, 3=Private for-profit)'
+      
+      - name: hd_2023
+        description: 'Institutional Characteristics 2023'
+        columns: *hd_columns
+
+      # enrollment
+      - name: effy_2024
+        description: '12-Month Enrollment (unduplicated headcount) 2024'
+        columns: &effy_columns
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: EFFYALEV
+            description: 'Level of student (1=All, 2=Undergrad, 4=Grad, 21=Undergrad degree-seeking, 22=Undergrad non-degree-seeking)'
           - name: EFYTOTLT
             description: 'Total 12-month enrollment'
+          - name: EFYTOTLM
+            description: 'Total 12-month enrollment - men'
+          - name: EFYTOTLW
+            description: 'Total 12-month enrollment - women'
+          - name: EFYAIANT
+            description: 'Enrollment - American Indian or Alaska Native'
+          - name: EFYASIAT
+            description: 'Enrollment - Asian'
+          - name: EFYBKAAT
+            description: 'Enrollment - Black or African American'
+          - name: EFYHISPT
+            description: 'Enrollment - Hispanic or Latino'
+          - name: EFYNHPIT
+            description: 'Enrollment - Native Hawaiian or Pacific Islander'
+          - name: EFYWHITT
+            description: 'Enrollment - White'
+          - name: EFY2MORT
+            description: 'Enrollment - Two or more races'
+          - name: EFYUNKNT
+            description: 'Enrollment - Race/ethnicity unknown'
+          - name: EFYNRALT
+            description: 'Enrollment - Nonresident alien'
 
-      - name: GR
+
+      - name: effy_2023
+        description: '12-Month Enrollment (unduplicated headcount) 2023'
+        columns: *effy_columns
+
+      - name: effy_2022
+        description: '12-Month Enrollment (unduplicated headcount) 2022'
+        columns: *effy_columns
+
+      - name: effy_2021
+        description: '12-Month Enrollment (unduplicated headcount) 2021'
+        columns: *effy_columns
+
+      - name: effy_2020
+        description: '12-Month Enrollment (unduplicated headcount) 2020'
+        columns: *effy_columns
+
+      - name: gr_2024
         description: 'Graduation Rates for first-time, full-time degree-seeking students'
         columns:
           - name: UNITID
@@ -94,7 +144,7 @@ sources:
           - name: GRTOTLT
             description: 'Total graduation rate'
 
-      - name: SFA
+      - name: sfa_2024
         description: 'Student Financial Aid information'
         columns:
           - name: UNITID
