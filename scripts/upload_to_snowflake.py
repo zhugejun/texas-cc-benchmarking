@@ -22,7 +22,7 @@ conn = snowflake.connector.connect(
     password=profile['password'],
     role=profile['role'],
     database=profile['database'],
-    schema=profile['schema'],
+    schema='RAW_IPEDS',
     warehouse='COMPUTE_WH'
 )
 
