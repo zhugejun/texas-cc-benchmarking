@@ -36,3 +36,8 @@ models:
       +materialized: ephemeral
     marts:
       +materialized: table
+
+# Seeds configuration - load IPEDS data
+seeds:
+  texas_cc_benchmarking:
+    +quote_columns: false
