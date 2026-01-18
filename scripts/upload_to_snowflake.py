@@ -49,7 +49,7 @@ csv_files = sorted(seeds_dir.glob('*.csv'))
 print(f'Found {len(csv_files)} CSV files to upload\n')
 
 for csv_file in csv_files:
-    table_name = csv_file.stem.upper()  # e.g., C_A_2020
+    table_name = csv_file.stem.upper()
     
     print(f'Uploading {csv_file.name} → {table_name}...')
     
