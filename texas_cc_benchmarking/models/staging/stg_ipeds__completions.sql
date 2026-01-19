@@ -15,43 +15,78 @@ with source as (
 
 renamed as (
     select
-        unitid,
+unitid,
         cipcode as cip_code,
         awlevel as award_level,
+        majornum as major_number,
         year,
-
+        
+        -- Award level descriptions (community colleges primarily award levels 1-3)
         case awlevel
-            when 2 then 'Certificates of at least 1 but less than 2 years'
-            when 3 then 'Associates degree'
-            when 4 then 'Certificates of at least 2 but less than 4 years'
+            when 1 then 'Award < 1 year'
+            when 2 then 'Award 1-2 years'
+            when 3 then 'Associate degree'  -- PRIMARY HB8 METRIC for community colleges
+            when 4 then 'Award 2-4 years'
             when 5 then 'Bachelors degree'
             when 6 then 'Postbaccalaureate certificate'
             when 7 then 'Masters degree'
             when 8 then 'Post-masters certificate'
-            when 17 then 'Doctors degree - research/scholarship'
-            when 18 then 'Doctors degree - professional practice'
-            when 19 then 'Doctors degree - other'
-            when 20 then 'Certificates of less than 12 weeks'
-            when 21 then 'Certificates of at least 12 weeks but less than 1 year'
+            when 9 then 'Doctors degree - research'
+            when 10 then 'Doctors degree - professional'
+            when 11 then 'Doctors degree - other'
+            when 12 then 'Award 4+ years'
             else 'Unknown'
         end as award_level_name,
-        majornum as major_number,
-
-        -- total completions
+        
+        -- Total completions (all genders)
         ctotalt as total_completions,
         ctotalm as total_completions_men,
         ctotalw as total_completions_women,
-
-        -- by race/ethnicity
-        caiant as completions_american_indian_alaska_native,
-        casiat as completions_asian,
-        cbkaat as completions_black_african_american,
-        chispt as completions_hispanic_latino,
-        cnhpit as completions_native_hawaiian_pacific_islander,
-        cwhitt as completions_white,
-        c2mort as completions_two_or_more_races,
-        cunknt as completions_unknown_race,
-        cnralt as completions_non_resident_alien,
+        
+        -- American Indian or Alaska Native (critical for HB8 equity metrics)
+        caiant as amer_indian_total,
+        caianm as amer_indian_men,
+        caianw as amer_indian_women,
+        
+        -- Asian
+        casiat as asian_total,
+        casiam as asian_men,
+        casiaw as asian_women,
+        
+        -- Black or African American (key HB8 equity population)
+        cbkaat as black_total,
+        cbkaam as black_men,
+        cbkaaw as black_women,
+        
+        -- Hispanic or Latino (MOST IMPORTANT for Texas CC completions - largest group)
+        chispt as hispanic_total,
+        chispm as hispanic_men,
+        chispw as hispanic_women,
+        
+        -- Native Hawaiian or Other Pacific Islander
+        cnhpit as native_hawaiian_total,
+        cnhpim as native_hawaiian_men,
+        cnhpiw as native_hawaiian_women,
+        
+        -- White
+        cwhitt as white_total,
+        cwhitm as white_men,
+        cwhitw as white_women,
+        
+        -- Two or more races
+        c2mort as two_or_more_total,
+        c2morm as two_or_more_men,
+        c2morw as two_or_more_women,
+        
+        -- Race/ethnicity unknown
+        cunknt as race_unknown_total,
+        cunknm as race_unknown_men,
+        cunknw as race_unknown_women,
+        
+        -- U.S. Nonresident (international students)
+        cnralt as nonresident_total,
+        cnralm as nonresident_men,
+        cnralw as nonresident_women
 
     from source
     where majornum = 1 -- first major only

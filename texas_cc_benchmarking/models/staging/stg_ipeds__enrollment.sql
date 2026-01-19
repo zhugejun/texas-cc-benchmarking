@@ -18,8 +18,10 @@ renamed as (
     select
         unitid,
         effyalev as student_level,
+        effylev as undergrad_or_grad_level,
+        lstudy as original_level_of_study,
         year,
-
+        
         case effyalev
             when 1 then 'All students'
             when 2 then 'Undergraduate'
@@ -28,22 +30,62 @@ renamed as (
             when 22 then 'Undergrad non-degree-seeking'
             else 'Other'
         end as student_level_name,
-
-        -- total enrollment
+        
+        -- Total enrollment (all genders)
         efytotlt as total_enrollment,
         efytotlm as total_enrollment_men,
         efytotlw as total_enrollment_women,
-
-        -- by race/ethnicity
-        efyaiant as enrollment_amer_indian,
-        efyasiat as enrollment_asian,
-        efybkaat as enrollment_black,
-        efyhispt as enrollment_hispanic,
-        efynhpit as enrollment_native_hawaiian,
-        efywhitt as enrollment_white,
-        efy2mort as enrollment_two_or_more,
-        efyunknt as enrollment_unknown_race,
-        efynralt as enrollment_nonresident_alien
+        
+        -- American Indian or Alaska Native (critical for HB8 equity metrics)
+        efyaiant as amer_indian_total,
+        efyaianm as amer_indian_men,
+        efyaianw as amer_indian_women,
+        
+        -- Asian
+        efyasiat as asian_total,
+        efyasiam as asian_men,
+        efyasiaw as asian_women,
+        
+        -- Black or African American (key HB8 equity population)
+        efybkaat as black_total,
+        efybkaam as black_men,
+        efybkaaw as black_women,
+        
+        -- Hispanic or Latino (largest minority group in Texas, critical for HB8)
+        efyhispt as hispanic_total,
+        efyhispm as hispanic_men,
+        efyhispw as hispanic_women,
+        
+        -- Native Hawaiian or Other Pacific Islander
+        efynhpit as native_hawaiian_total,
+        efynhpim as native_hawaiian_men,
+        efynhpiw as native_hawaiian_women,
+        
+        -- White
+        efywhitt as white_total,
+        efywhitm as white_men,
+        efywhitw as white_women,
+        
+        -- Two or more races
+        efy2mort as two_or_more_total,
+        efy2morm as two_or_more_men,
+        efy2morw as two_or_more_women,
+        
+        -- Race/ethnicity unknown
+        efyunknt as race_unknown_total,
+        efyunknm as race_unknown_men,
+        efyunknw as race_unknown_women,
+        
+        -- U.S. Nonresident (international students)
+        efynralt as nonresident_total,
+        efynralm as nonresident_men,
+        efynralw as nonresident_women,
+        
+        -- New gender categories (IPEDS added these for inclusivity)
+        efyguun as gender_unknown,
+        efyguan as another_gender,
+        efygutot as gender_unknown_or_another_total,
+        efygukn as gender_binary_total  -- Total reported as men or women
 
     from source
     where year = 2024

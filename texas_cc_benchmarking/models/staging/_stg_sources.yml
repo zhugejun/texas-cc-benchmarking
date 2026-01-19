@@ -176,18 +176,54 @@ sources:
         description: '12-Month Enrollment (unduplicated headcount) 2020'
         columns: *effy_columns
 
+
+
+      - name: sfa_2024
+        description: 'Student Financial Aid information 2024'
+        columns: &sfa_columns
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: SCUGRAD
+            description: 'Number of undergraduates analyzed for financial aid'
+
+      - name: sfa_2023
+        description: 'Student Financial Aid information 2023'
+        columns: *sfa_columns
+
+      - name: sfa_2022
+        description: 'Student Financial Aid information 2022'
+        columns: *sfa_columns
+
+      - name: sfa_2021
+        description: 'Student Financial Aid information 2021'
+        columns: *sfa_columns
+
+      - name: sfa_2020
+        description: 'Student Financial Aid information 2020'
+        columns: *sfa_columns
+
+
       - name: gr_2024
-        description: 'Graduation Rates for first-time, full-time degree-seeking students'
-        columns:
+        description: 'Graduation Rates for first-time, full-time degree-seeking students 2024'
+        columns: &gr_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
           - name: GRTOTLT
             description: 'Total graduation rate'
 
-      - name: sfa_2024
-        description: 'Student Financial Aid information'
-        columns:
-          - name: UNITID
-            description: 'Unique identification number of the institution'
-          - name: SCUGRAD
-            description: 'Number of undergraduates analyzed for financial aid'
+
+      - name: gr_2023
+        description: 'Graduation Rates for first-time, full-time degree-seeking students 2023'
+        columns: *gr_columns
+
+      - name: gr_2022
+        description: 'Graduation Rates for first-time, full-time degree-seeking students 2022'
+        columns: *gr_columns
+
+      - name: gr_2021
+        description: 'Graduation Rates for first-time, full-time degree-seeking students 2021'
+        columns: *gr_columns
+
+      - name: gr_2020
+        description: 'Graduation Rates for first-time, full-time degree-seeking students 2020'
+        columns: *gr_columns
