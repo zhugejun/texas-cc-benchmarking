@@ -7,6 +7,7 @@ from .assets import (
     ipeds_effy,
     ipeds_gr,
     ipeds_sfa,
+    ipeds_ef_d,
     texas_cc_benchmarking_dbt_assets,
 )
 from .project import texas_cc_benchmarking_project
@@ -21,6 +22,7 @@ defs = Definitions(
         ipeds_effy,
         ipeds_gr,
         ipeds_sfa,
+        ipeds_ef_d,
         # dbt transformation assets
         texas_cc_benchmarking_dbt_assets,
     ],
