@@ -29,6 +29,8 @@ defs = Definitions(
     schedules=schedules,
     resources={
         "dbt": DbtCliResource(project_dir=texas_cc_benchmarking_project),
-        "snowflake": SnowflakeResource(**get_snowflake_config_from_dbt()),
+        "snowflake": SnowflakeResource(
+            **{**get_snowflake_config_from_dbt(), "schema_name": "RAW_IPEDS"}
+        ),
     },
 )
