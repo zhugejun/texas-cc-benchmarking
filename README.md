@@ -1,15 +1,61 @@
 # Texas Community College Benchmarking
 
-A data pipeline for benchmarking community colleges in Texas.
+A dbt project for benchmarking Texas community colleges using IPEDS data. Supports HB8 equity reporting, peer comparisons, and student outcome analytics.
+
+## Project Structure
+
+```
+texas_cc_benchmarking/
+├── models/
+│   ├── staging/          # Clean raw IPEDS data
+│   ├── intermediate/     # Business logic and transformations
+│   └── marts/            # Analytics-ready tables
+├── seeds/                # Static reference data
+└── scripts/              # Data loading utilities
+```
+
+## Data Models
+
+### Staging Layer
+Raw IPEDS data cleaned and renamed:
+
+| Model | IPEDS Survey | Description |
+|-------|--------------|-------------|
+| `stg_ipeds__institutions` | HD | Institution characteristics |
+| `stg_ipeds__enrollment` | EFFY | 12-month enrollment by demographics |
+| `stg_ipeds__completions` | C_A | Awards/degrees by CIP code |
+| `stg_ipeds__financial_aid` | SFA | Pell grants, loans, aid |
+| `stg_ipeds__graduation_rates` | GR | Graduation rates by cohort |
+| `stg_ipeds__retention_rates` | EF_D | Retention rates, student-faculty ratio |
+
+### Intermediate Layer
+Reusable building blocks with business logic:
+
+| Model | Description |
+|-------|-------------|
+| `int_texas_community_colleges` | Filters to Texas public 2-year institutions |
+| `int_peer_groups` | Peer groupings by size, HSI status, Pell tier, urbanicity |
+| `int_completion_metrics` | Aggregated completions by institution |
+| `int_graduation_rates` | 150% graduation rates with equity gaps |
+| `int_retention_rates` | FT/PT retention with blended rate |
+
+### Marts Layer
+Analytics-ready tables for reporting:
+
+| Model | Description |
+|-------|-------------|
+| `dim_texas_institutions` | Institution dimension with all attributes |
+| `fct_student_outcomes` | Combined completion, graduation, retention metrics |
+| `rpt_peer_comparison` | Benchmark institutions against peer group averages |
+| `rpt_equity_dashboard` | HB8 equity gaps and completion equity indices |
 
 ## Setup
 
 ### Prerequisites
 
 - Python 3.12
-- Snowflake
-- dbt
-- dagster
+- Snowflake account
+- dbt-snowflake
 
 ### Python
 
