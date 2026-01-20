@@ -183,8 +183,183 @@ sources:
         columns: &sfa_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
+          # Undergraduate enrollment for financial aid cohort
           - name: SCUGRAD
             description: 'Number of undergraduates analyzed for financial aid'
+          - name: SCUGDGSK
+            description: 'Undergraduate degree-seeking count'
+          - name: SCUGNDGS
+            description: 'Undergraduate non-degree-seeking count'
+          - name: SCUGFFN
+            description: 'Full-time first-time undergraduate count (critical for HB8)'
+          - name: SCUGFFP
+            description: 'Full-time first-time undergraduate percent'
+          # Fall cohort enrollment
+          - name: SCFA2
+            description: 'Fall cohort total undergraduates'
+          - name: SCFA2DG
+            description: 'Fall cohort degree-seeking'
+          - name: SCFA2ND
+            description: 'Fall cohort non-degree-seeking'
+          - name: SCFA1N
+            description: 'Fall cohort student count'
+          - name: SCFA1P
+            description: 'Fall cohort percent of undergraduates'
+          # Full-year cohort enrollment
+          - name: SCFY2
+            description: 'Full-year cohort total undergraduates'
+          - name: SCFY2DG
+            description: 'Full-year cohort degree-seeking'
+          - name: SCFY2ND
+            description: 'Full-year cohort non-degree-seeking'
+          - name: SCFY1N
+            description: 'Full-year cohort student count'
+          - name: SCFY1P
+            description: 'Full-year cohort percent of undergraduates'
+          # All undergraduates: Pell Grant recipients
+          - name: UPGRNTN
+            description: 'All UG Pell Grant recipients count (key for HB8 economically disadvantaged)'
+          - name: UPGRNTP
+            description: 'All UG Pell Grant recipients percent'
+          - name: UPGRNTT
+            description: 'All UG Pell Grant total amount'
+          - name: UPGRNTA
+            description: 'All UG Pell Grant average amount'
+          # All undergraduates: Any grant aid
+          - name: UAGRNTN
+            description: 'All UG any grant recipients count'
+          - name: UAGRNTP
+            description: 'All UG any grant recipients percent'
+          - name: UAGRNTT
+            description: 'All UG any grant total amount'
+          - name: UAGRNTA
+            description: 'All UG any grant average amount'
+          # All undergraduates: Federal student loans
+          - name: UFLOANN
+            description: 'All UG federal loan recipients count'
+          - name: UFLOANP
+            description: 'All UG federal loan recipients percent'
+          - name: UFLOANT
+            description: 'All UG federal loan total amount'
+          - name: UFLOANA
+            description: 'All UG federal loan average amount'
+          # Degree-seeking undergraduates: Pell grants
+          - name: UDGPGRNTN
+            description: 'Degree-seeking Pell recipients count'
+          - name: UDGPGRNTP
+            description: 'Degree-seeking Pell recipients percent'
+          - name: UDGPGRNTT
+            description: 'Degree-seeking Pell total amount'
+          - name: UDGPGRNTA
+            description: 'Degree-seeking Pell average amount'
+          # Degree-seeking undergraduates: Any grant aid
+          - name: UDGAGRNTN
+            description: 'Degree-seeking any grant recipients count'
+          - name: UDGAGRNTP
+            description: 'Degree-seeking any grant recipients percent'
+          - name: UDGAGRNTT
+            description: 'Degree-seeking any grant total amount'
+          - name: UDGAGRNTA
+            description: 'Degree-seeking any grant average amount'
+          # Degree-seeking undergraduates: Federal loans
+          - name: UDGFLOANN
+            description: 'Degree-seeking federal loan recipients count'
+          - name: UDGFLOANP
+            description: 'Degree-seeking federal loan recipients percent'
+          - name: UDGFLOANT
+            description: 'Degree-seeking federal loan total amount'
+          - name: UDGFLOANA
+            description: 'Degree-seeking federal loan average amount'
+          # FTFT: Any financial aid
+          - name: ANYAIDN
+            description: 'FTFT any aid recipients count'
+          - name: ANYAIDP
+            description: 'FTFT any aid recipients percent'
+          - name: AIDFSIN
+            description: 'FTFT loan or grant recipients count'
+          - name: AIDFSIP
+            description: 'FTFT loan or grant recipients percent'
+          # FTFT: Federal, state, local, or institutional grants combined
+          - name: AGRNT_N
+            description: 'FTFT any grant recipients count'
+          - name: AGRNT_P
+            description: 'FTFT any grant recipients percent'
+          - name: AGRNT_T
+            description: 'FTFT any grant total amount'
+          - name: AGRNT_A
+            description: 'FTFT any grant average amount'
+          # FTFT: Federal grants
+          - name: FGRNT_N
+            description: 'FTFT federal grant recipients count'
+          - name: FGRNT_P
+            description: 'FTFT federal grant recipients percent'
+          - name: FGRNT_T
+            description: 'FTFT federal grant total amount'
+          - name: FGRNT_A
+            description: 'FTFT federal grant average amount'
+          # FTFT: Pell grants
+          - name: PGRNT_N
+            description: 'FTFT Pell recipients count (critical for HB8)'
+          - name: PGRNT_P
+            description: 'FTFT Pell recipients percent'
+          - name: PGRNT_T
+            description: 'FTFT Pell total amount'
+          - name: PGRNT_A
+            description: 'FTFT Pell average amount'
+          # FTFT: Other federal grants (non-Pell)
+          - name: OFGRT_N
+            description: 'FTFT other federal grant recipients count'
+          - name: OFGRT_P
+            description: 'FTFT other federal grant recipients percent'
+          - name: OFGRT_T
+            description: 'FTFT other federal grant total amount'
+          - name: OFGRT_A
+            description: 'FTFT other federal grant average amount'
+          # FTFT: State/local grants
+          - name: SGRNT_N
+            description: 'FTFT state/local grant recipients count'
+          - name: SGRNT_P
+            description: 'FTFT state/local grant recipients percent'
+          - name: SGRNT_T
+            description: 'FTFT state/local grant total amount'
+          - name: SGRNT_A
+            description: 'FTFT state/local grant average amount'
+          # FTFT: Institutional grants
+          - name: IGRNT_N
+            description: 'FTFT institutional grant recipients count'
+          - name: IGRNT_P
+            description: 'FTFT institutional grant recipients percent'
+          - name: IGRNT_T
+            description: 'FTFT institutional grant total amount'
+          - name: IGRNT_A
+            description: 'FTFT institutional grant average amount'
+          # FTFT: Student loans
+          - name: LOAN_N
+            description: 'FTFT loan recipients count'
+          - name: LOAN_P
+            description: 'FTFT loan recipients percent'
+          - name: LOAN_T
+            description: 'FTFT loan total amount'
+          - name: LOAN_A
+            description: 'FTFT loan average amount'
+          # FTFT: Federal student loans
+          - name: FLOAN_N
+            description: 'FTFT federal loan recipients count'
+          - name: FLOAN_P
+            description: 'FTFT federal loan recipients percent'
+          - name: FLOAN_T
+            description: 'FTFT federal loan total amount'
+          - name: FLOAN_A
+            description: 'FTFT federal loan average amount'
+          # FTFT: Other (non-federal) student loans
+          - name: OLOAN_N
+            description: 'FTFT other loan recipients count'
+          - name: OLOAN_P
+            description: 'FTFT other loan recipients percent'
+          - name: OLOAN_T
+            description: 'FTFT other loan total amount'
+          - name: OLOAN_A
+            description: 'FTFT other loan average amount'
 
       - name: sfa_2023
         description: 'Student Financial Aid information 2023'
@@ -208,8 +383,87 @@ sources:
         columns: &gr_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
+          # Cohort identifying information
+          - name: GRTYPE
+            description: 'Graduation rate cohort type code'
+          - name: CHRTSTAT
+            description: 'Cohort status code'
+          - name: SECTION
+            description: 'Data section'
+          - name: COHORT
+            description: 'Cohort year'
+          - name: LINE
+            description: 'Survey line number'
+          # Grand totals (all genders)
           - name: GRTOTLT
-            description: 'Total graduation rate'
+            description: 'Total count/rate'
+          - name: GRTOTLM
+            description: 'Total - men'
+          - name: GRTOTLW
+            description: 'Total - women'
+          # American Indian or Alaska Native
+          - name: GRAIANT
+            description: 'American Indian or Alaska Native - total'
+          - name: GRAIANM
+            description: 'American Indian or Alaska Native - men'
+          - name: GRAIANW
+            description: 'American Indian or Alaska Native - women'
+          # Asian
+          - name: GRASIAT
+            description: 'Asian - total'
+          - name: GRASIAM
+            description: 'Asian - men'
+          - name: GRASIAW
+            description: 'Asian - women'
+          # Black or African American
+          - name: GRBKAAT
+            description: 'Black or African American - total'
+          - name: GRBKAAM
+            description: 'Black or African American - men'
+          - name: GRBKAAW
+            description: 'Black or African American - women'
+          # Hispanic or Latino
+          - name: GRHISPT
+            description: 'Hispanic or Latino - total'
+          - name: GRHISPM
+            description: 'Hispanic or Latino - men'
+          - name: GRHISPW
+            description: 'Hispanic or Latino - women'
+          # Native Hawaiian or Other Pacific Islander
+          - name: GRNHPIT
+            description: 'Native Hawaiian or Pacific Islander - total'
+          - name: GRNHPIM
+            description: 'Native Hawaiian or Pacific Islander - men'
+          - name: GRNHPIW
+            description: 'Native Hawaiian or Pacific Islander - women'
+          # White
+          - name: GRWHITT
+            description: 'White - total'
+          - name: GRWHITM
+            description: 'White - men'
+          - name: GRWHITW
+            description: 'White - women'
+          # Two or more races
+          - name: GR2MORT
+            description: 'Two or more races - total'
+          - name: GR2MORM
+            description: 'Two or more races - men'
+          - name: GR2MORW
+            description: 'Two or more races - women'
+          # Race/ethnicity unknown
+          - name: GRUNKNT
+            description: 'Race/ethnicity unknown - total'
+          - name: GRUNKNM
+            description: 'Race/ethnicity unknown - men'
+          - name: GRUNKNW
+            description: 'Race/ethnicity unknown - women'
+          # U.S. Nonresident (international students)
+          - name: GRNRALT
+            description: 'Nonresident alien - total'
+          - name: GRNRALM
+            description: 'Nonresident alien - men'
+          - name: GRNRALW
+            description: 'Nonresident alien - women'
 
 
       - name: gr_2023
