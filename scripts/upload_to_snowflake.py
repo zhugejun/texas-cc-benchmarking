@@ -2,9 +2,13 @@
 """
 Upload IPEDS seed files to Snowflake using COPY command.
 Much faster than dbt seed.
+
+Usage:
+    python upload_to_snowflake.py              # Upload all CSVs
+    python upload_to_snowflake.py "ef_d_*"     # Upload only ef_d files
 """
 
-import glob
+import sys
 from pathlib import Path
 import snowflake.connector
 import yaml
@@ -55,11 +59,12 @@ cursor.execute("""
 """)
 print('✓ File formats created\n')
 
-# Get all CSV files
+# Get CSV files (optionally filtered by pattern)
 seeds_dir = Path(__file__).parent.parent / 'texas_cc_benchmarking' / 'seeds'
-csv_files = sorted(seeds_dir.glob('*.csv'))
+pattern = sys.argv[1] + '.csv' if len(sys.argv) > 1 else '*.csv'
+csv_files = sorted(seeds_dir.glob(pattern))
 
-print(f'Found {len(csv_files)} CSV files to upload\n')
+print(f'Found {len(csv_files)} CSV files matching "{pattern}"\n')
 
 for csv_file in csv_files:
     table_name = csv_file.stem.upper()
