@@ -4,7 +4,7 @@ A dbt project for benchmarking Texas community colleges using IPEDS data. Suppor
 
 ## Project Structure
 
-```
+```txt
 texas_cc_benchmarking/
 ├── models/
 │   ├── staging/          # Clean raw IPEDS data
@@ -17,10 +17,11 @@ texas_cc_benchmarking/
 ## Data Models
 
 ### Staging Layer
+
 Raw IPEDS data cleaned and renamed:
 
 | Model | IPEDS Survey | Description |
-|-------|--------------|-------------|
+| ----- | ------------ | ----------- |
 | `stg_ipeds__institutions` | HD | Institution characteristics |
 | `stg_ipeds__enrollment` | EFFY | 12-month enrollment by demographics |
 | `stg_ipeds__completions` | C_A | Awards/degrees by CIP code |
@@ -29,10 +30,11 @@ Raw IPEDS data cleaned and renamed:
 | `stg_ipeds__retention_rates` | EF_D | Retention rates, student-faculty ratio |
 
 ### Intermediate Layer
+
 Reusable building blocks with business logic:
 
 | Model | Description |
-|-------|-------------|
+| ----- | ----------- |
 | `int_texas_community_colleges` | Filters to Texas public 2-year institutions |
 | `int_peer_groups` | Peer groupings by size, HSI status, Pell tier, urbanicity |
 | `int_completion_metrics` | Aggregated completions by institution |
@@ -40,10 +42,11 @@ Reusable building blocks with business logic:
 | `int_retention_rates` | FT/PT retention with blended rate |
 
 ### Marts Layer
+
 Analytics-ready tables for reporting:
 
 | Model | Description |
-|-------|-------------|
+| ----- | ----------- |
 | `dim_texas_institutions` | Institution dimension with all attributes |
 | `fct_student_outcomes` | Combined completion, graduation, retention metrics |
 | `rpt_peer_comparison` | Benchmark institutions against peer group averages |
@@ -127,7 +130,7 @@ There are two ways to get the data and load it into Snowflake:
 
 ### Option 1: Manual Download and Upload
 
-**Step 1: Download IPEDS data**
+#### Step 1: Download IPEDS data
 
 ```bash
 python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 --filter-texas
@@ -135,7 +138,7 @@ python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 --filter-texas
 
 This will download the IPEDS datasets from 2020 to 2024 and filter for Texas community colleges.
 
-**Step 2: Upload seeds to Snowflake**
+#### Step 2: Upload seeds to Snowflake
 
 `dbt seed` will load the data from the `seeds` directory into the `STAGING` schema in Snowflake. However, it will take a while. So we can use the `upload_to_snowflake.py` script to upload the data to Snowflake.
 
@@ -145,7 +148,7 @@ python scripts/upload_to_snowflake.py
 
 ### Option 2: Automated with Dagster
 
-**Step 1: Initialize a Dagster project with dbt integration**
+#### Step 1: Initialize a Dagster project with dbt integration
 
 ```bash
 # From the project root (make sure you're in the parent directory)
@@ -159,7 +162,7 @@ This creates a `dagster_pipelines/` folder with:
 - Resources (for Snowflake connection)
 - Configuration files
 
-**Step 2: Configure profiles directory**
+#### Step 2: Configure profiles directory
 
 The scaffold command may not correctly set the dbt profiles directory. Update `dagster_pipelines/dagster_pipelines/project.py`:
 
@@ -171,7 +174,7 @@ texas_cc_benchmarking_project = DbtProject(
 )
 ```
 
-**Step 3: Verify Dagster setup:**
+#### Step 3: Verify Dagster setup
 
 ```bash
 cd dagster_pipelines
@@ -183,7 +186,7 @@ dagster dev
 
 The Dagster UI should open at http://localhost:3000 (or your specified port).
 
-**Step 4: Run the pipeline**
+#### Step 4: Run the pipeline
 
 ```bash
 dagster pipeline execute -f dagster_pipelines/dagster_pipelines/assets.py
