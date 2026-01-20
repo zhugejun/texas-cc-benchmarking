@@ -144,7 +144,7 @@ if page == "Overview":
     if 'LATITUDE' in institutions.columns and 'LONGITUDE' in institutions.columns:
         map_data = institutions[['INSTITUTION_NAME', 'LATITUDE', 'LONGITUDE', 'SIZE_TIER', 'CITY']].dropna(subset=['LATITUDE', 'LONGITUDE'])
         if not map_data.empty:
-            fig = px.scatter_mapbox(
+            fig = px.scatter_map(
                 map_data,
                 lat='LATITUDE',
                 lon='LONGITUDE',
@@ -153,10 +153,10 @@ if page == "Overview":
                 color='SIZE_TIER',
                 zoom=5,
                 center={'lat': 31.0, 'lon': -99.5},  # Center on Texas
-                mapbox_style='carto-positron'
+                map_style='carto-positron'
             )
             fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0}, height=500)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width='stretch')
         else:
             st.warning("No institutions with valid coordinates found")
     else:
