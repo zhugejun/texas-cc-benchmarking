@@ -52,7 +52,45 @@ Analytics-ready tables for reporting:
 | `rpt_peer_comparison` | Benchmark institutions against peer group averages |
 | `rpt_equity_dashboard` | HB8 equity gaps and completion equity indices |
 
-## Setup
+## Overview
+
+This project uses a modern data stack:
+
+```
+IPEDS Data → Dagster → Snowflake (RAW) → dbt → Snowflake (MARTS) → Analytics
+```
+
+### Architecture
+
+**Data Flow:**
+
+1. **Extract & Load (Dagster)**
+   - Downloads IPEDS CSV files from NCES
+   - Processes data using pandas
+   - Loads to Snowflake `RAW_IPEDS` schema
+
+2. **Transform (dbt)**
+   - **Staging**: Clean and standardize raw data (views)
+   - **Intermediate**: Business logic and joins (ephemeral CTEs)
+   - **Marts**: Final analytics tables (materialized tables)
+
+3. **Schemas**
+   - `RAW_IPEDS`: Raw IPEDS data (managed by Dagster)
+   - `STAGING`: Cleaned and typed data (dbt views)
+   - `INTERMEDIATE`: Reusable business logic (dbt ephemeral)
+   - `MARTS`: Analytics-ready tables (dbt tables)
+
+### Data Sources
+
+This project uses IPEDS (Integrated Postsecondary Education Data System) data from NCES:
+
+- **HD**: Institutional Characteristics
+- **C_A**: Completions by Award Level
+- **EFFY**: 12-Month Enrollment
+- **GR**: Graduation Rates
+- **SFA**: Student Financial Aid
+
+## Quick Start
 
 ### Prerequisites
 

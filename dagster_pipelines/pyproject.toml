@@ -1,7 +1,7 @@
 [project]
 name = "dagster_pipelines"
 version = "0.1.0"
-description = "Add your description here"
+description = "Texas Community College Benchmarking Pipelines"
 readme = "README.md"
 requires-python = ">=3.10,<3.15"
 dependencies = [
