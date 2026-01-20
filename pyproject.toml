@@ -15,5 +15,6 @@ dependencies = [
     "pyyaml>=6.0.3",
     "requests>=2.32.5",
     "snowflake-connector-python>=4.2.0",
+    "snowflake-sqlalchemy>=1.8.2",
     "streamlit>=1.53.0",
 ]

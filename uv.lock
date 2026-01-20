@@ -2364,6 +2364,19 @@ wheels = [
 ]
 
 [[package]]
+name = "snowflake-sqlalchemy"
+version = "1.8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "snowflake-connector-python" },
+    { name = "sqlalchemy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/66/0b/5e90eb28191ad6e0318254394c7e2902c4037fd566aa299dc8b5b16238f8/snowflake_sqlalchemy-1.8.2.tar.gz", hash = "sha256:91ca38719e117f94dd195ba94c22dd22f69c585b136ed129ba4e2dd93252b0c2", size = 122603 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/77/c3af74a84eb00c1004a8e3c8a98627a3eecb2563f4ee01e621326c947bce/snowflake_sqlalchemy-1.8.2-py3-none-any.whl", hash = "sha256:13ad79bf51654cdaaedfbcc60d20bee417c0a128f8710eabbf4aba65b50f6d3d", size = 72726 },
+]
+
+[[package]]
 name = "snowplow-tracker"
 version = "1.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2565,6 +2578,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "requests" },
     { name = "snowflake-connector-python" },
+    { name = "snowflake-sqlalchemy" },
     { name = "streamlit" },
 ]
 
@@ -2580,6 +2594,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "snowflake-connector-python", specifier = ">=4.2.0" },
+    { name = "snowflake-sqlalchemy", specifier = ">=1.8.2" },
     { name = "streamlit", specifier = ">=1.53.0" },
 ]
 
