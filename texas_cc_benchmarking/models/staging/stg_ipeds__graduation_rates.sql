@@ -94,55 +94,55 @@ renamed as (
           cohort as cohort_year,
           line as survey_line,
           
-          -- Grand totals (all genders)
-          grtotlt as total,
-          grtotlm as total_men,
-          grtotlw as total_women,
-          
+          -- Grand totals (all genders) - cast to handle large cohorts
+          grtotlt::number(10,0) as total,
+          grtotlm::number(10,0) as total_men,
+          grtotlw::number(10,0) as total_women,
+
           -- American Indian or Alaska Native (critical for HB8 equity metrics)
-          graiant as amer_indian_total,
-          graianm as amer_indian_men,
-          graianw as amer_indian_women,
-          
+          graiant::number(10,0) as amer_indian_total,
+          graianm::number(10,0) as amer_indian_men,
+          graianw::number(10,0) as amer_indian_women,
+
           -- Asian
-          grasiat as asian_total,
-          grasiam as asian_men,
-          grasiaw as asian_women,
-          
+          grasiat::number(10,0) as asian_total,
+          grasiam::number(10,0) as asian_men,
+          grasiaw::number(10,0) as asian_women,
+
           -- Black or African American (key HB8 equity population)
-          grbkaat as black_total,
-          grbkaam as black_men,
-          grbkaaw as black_women,
-          
+          grbkaat::number(10,0) as black_total,
+          grbkaam::number(10,0) as black_men,
+          grbkaaw::number(10,0) as black_women,
+
           -- Hispanic or Latino (CRITICAL for Texas community colleges)
-          grhispt as hispanic_total,
-          grhispm as hispanic_men,
-          grhispw as hispanic_women,
-          
+          grhispt::number(10,0) as hispanic_total,
+          grhispm::number(10,0) as hispanic_men,
+          grhispw::number(10,0) as hispanic_women,
+
           -- Native Hawaiian or Other Pacific Islander
-          grnhpit as native_hawaiian_total,
-          grnhpim as native_hawaiian_men,
-          grnhpiw as native_hawaiian_women,
-          
+          grnhpit::number(10,0) as native_hawaiian_total,
+          grnhpim::number(10,0) as native_hawaiian_men,
+          grnhpiw::number(10,0) as native_hawaiian_women,
+
           -- White
-          grwhitt as white_total,
-          grwhitm as white_men,
-          grwhitw as white_women,
-          
+          grwhitt::number(10,0) as white_total,
+          grwhitm::number(10,0) as white_men,
+          grwhitw::number(10,0) as white_women,
+
           -- Two or more races
-          gr2mort as two_or_more_total,
-          gr2morm as two_or_more_men,
-          gr2morw as two_or_more_women,
-          
+          gr2mort::number(10,0) as two_or_more_total,
+          gr2morm::number(10,0) as two_or_more_men,
+          gr2morw::number(10,0) as two_or_more_women,
+
           -- Race/ethnicity unknown
-          grunknt as race_unknown_total,
-          grunknm as race_unknown_men,
-          grunknw as race_unknown_women,
-          
+          grunknt::number(10,0) as race_unknown_total,
+          grunknm::number(10,0) as race_unknown_men,
+          grunknw::number(10,0) as race_unknown_women,
+
           -- U.S. Nonresident (international students)
-          grnralt as nonresident_total,
-          grnralm as nonresident_men,
-          grnralw as nonresident_women
+          grnralt::number(10,0) as nonresident_total,
+          grnralm::number(10,0) as nonresident_men,
+          grnralw::number(10,0) as nonresident_women
         
     from source
     where year = 2024

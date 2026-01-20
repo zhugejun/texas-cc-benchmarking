@@ -20,6 +20,8 @@ final as (
         i.institution_name,
         i.city,
         i.state_code,
+        i.latitude,
+        i.longitude,
         i.website_url,
 
         -- Institution classification

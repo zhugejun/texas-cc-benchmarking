@@ -14,32 +14,32 @@ institution_completions as (
     select
         c.unitid,
 
-        -- Total completions across all award levels
-        sum(c.total_completions) as total_completions,
+        -- Total completions across all award levels (cast to larger int)
+        sum(c.total_completions)::number(10,0) as total_completions,
 
         -- Certificates < 1 year
-        sum(case when c.award_level = 1 then c.total_completions else 0 end) as certificates_under_1yr,
+        sum(case when c.award_level = 1 then c.total_completions else 0 end)::number(10,0) as certificates_under_1yr,
 
         -- Certificates 1-2 years
-        sum(case when c.award_level = 2 then c.total_completions else 0 end) as certificates_1_2yr,
+        sum(case when c.award_level = 2 then c.total_completions else 0 end)::number(10,0) as certificates_1_2yr,
 
         -- Associate degrees (PRIMARY metric for community colleges)
-        sum(case when c.award_level = 3 then c.total_completions else 0 end) as associate_degrees,
+        sum(case when c.award_level = 3 then c.total_completions else 0 end)::number(10,0) as associate_degrees,
 
         -- All certificates combined
-        sum(case when c.award_level in (1, 2) then c.total_completions else 0 end) as total_certificates,
+        sum(case when c.award_level in (1, 2) then c.total_completions else 0 end)::number(10,0) as total_certificates,
 
         -- Demographics for associate degrees (HB8 equity metrics)
-        sum(case when c.award_level = 3 then c.hispanic_total else 0 end) as associate_hispanic,
-        sum(case when c.award_level = 3 then c.black_total else 0 end) as associate_black,
-        sum(case when c.award_level = 3 then c.white_total else 0 end) as associate_white,
-        sum(case when c.award_level = 3 then c.asian_total else 0 end) as associate_asian,
-        sum(case when c.award_level = 3 then c.amer_indian_total else 0 end) as associate_amer_indian,
-        sum(case when c.award_level = 3 then c.two_or_more_total else 0 end) as associate_two_or_more,
+        sum(case when c.award_level = 3 then c.hispanic_total else 0 end)::number(10,0) as associate_hispanic,
+        sum(case when c.award_level = 3 then c.black_total else 0 end)::number(10,0) as associate_black,
+        sum(case when c.award_level = 3 then c.white_total else 0 end)::number(10,0) as associate_white,
+        sum(case when c.award_level = 3 then c.asian_total else 0 end)::number(10,0) as associate_asian,
+        sum(case when c.award_level = 3 then c.amer_indian_total else 0 end)::number(10,0) as associate_amer_indian,
+        sum(case when c.award_level = 3 then c.two_or_more_total else 0 end)::number(10,0) as associate_two_or_more,
 
         -- Gender breakdown for associate degrees
-        sum(case when c.award_level = 3 then c.total_completions_men else 0 end) as associate_men,
-        sum(case when c.award_level = 3 then c.total_completions_women else 0 end) as associate_women
+        sum(case when c.award_level = 3 then c.total_completions_men else 0 end)::number(10,0) as associate_men,
+        sum(case when c.award_level = 3 then c.total_completions_women else 0 end)::number(10,0) as associate_women
 
     from completions c
     inner join texas_ccs t on c.unitid = t.unitid

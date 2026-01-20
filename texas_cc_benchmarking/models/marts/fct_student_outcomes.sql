@@ -22,12 +22,12 @@ final as (
         i.unitid,
         i.institution_name,
 
-        -- Completion metrics
-        c.total_completions,
-        c.associate_degrees,
-        c.total_certificates,
-        c.certificates_under_1yr,
-        c.certificates_1_2yr,
+        -- Completion metrics (cast to larger integers)
+        c.total_completions::number(10,0) as total_completions,
+        c.associate_degrees::number(10,0) as associate_degrees,
+        c.total_certificates::number(10,0) as total_certificates,
+        c.certificates_under_1yr::number(10,0) as certificates_under_1yr,
+        c.certificates_1_2yr::number(10,0) as certificates_1_2yr,
 
         -- Completion demographics
         c.pct_associate_hispanic,
@@ -57,9 +57,9 @@ final as (
         r.part_time_retention_rate,
         r.overall_retention_rate,
 
-        -- Cohort sizes (for weighted averages)
-        g.adjusted_cohort_total as graduation_cohort_size,
-        r.total_entering_undergrads as retention_cohort_size
+        -- Cohort sizes (for weighted averages - cast to larger integers)
+        g.adjusted_cohort_total::number(10,0) as graduation_cohort_size,
+        r.total_entering_undergrads::number(10,0) as retention_cohort_size
 
     from institutions i
     left join completions c on i.unitid = c.unitid

@@ -38,55 +38,55 @@ unitid,
             else 'Unknown'
         end as award_level_name,
         
-        -- Total completions (all genders)
-        ctotalt as total_completions,
-        ctotalm as total_completions_men,
-        ctotalw as total_completions_women,
-        
+        -- Total completions (all genders) - cast to handle large values
+        ctotalt::number(10,0) as total_completions,
+        ctotalm::number(10,0) as total_completions_men,
+        ctotalw::number(10,0) as total_completions_women,
+
         -- American Indian or Alaska Native (critical for HB8 equity metrics)
-        caiant as amer_indian_total,
-        caianm as amer_indian_men,
-        caianw as amer_indian_women,
-        
+        caiant::number(10,0) as amer_indian_total,
+        caianm::number(10,0) as amer_indian_men,
+        caianw::number(10,0) as amer_indian_women,
+
         -- Asian
-        casiat as asian_total,
-        casiam as asian_men,
-        casiaw as asian_women,
-        
+        casiat::number(10,0) as asian_total,
+        casiam::number(10,0) as asian_men,
+        casiaw::number(10,0) as asian_women,
+
         -- Black or African American (key HB8 equity population)
-        cbkaat as black_total,
-        cbkaam as black_men,
-        cbkaaw as black_women,
-        
+        cbkaat::number(10,0) as black_total,
+        cbkaam::number(10,0) as black_men,
+        cbkaaw::number(10,0) as black_women,
+
         -- Hispanic or Latino (MOST IMPORTANT for Texas CC completions - largest group)
-        chispt as hispanic_total,
-        chispm as hispanic_men,
-        chispw as hispanic_women,
-        
+        chispt::number(10,0) as hispanic_total,
+        chispm::number(10,0) as hispanic_men,
+        chispw::number(10,0) as hispanic_women,
+
         -- Native Hawaiian or Other Pacific Islander
-        cnhpit as native_hawaiian_total,
-        cnhpim as native_hawaiian_men,
-        cnhpiw as native_hawaiian_women,
-        
+        cnhpit::number(10,0) as native_hawaiian_total,
+        cnhpim::number(10,0) as native_hawaiian_men,
+        cnhpiw::number(10,0) as native_hawaiian_women,
+
         -- White
-        cwhitt as white_total,
-        cwhitm as white_men,
-        cwhitw as white_women,
-        
+        cwhitt::number(10,0) as white_total,
+        cwhitm::number(10,0) as white_men,
+        cwhitw::number(10,0) as white_women,
+
         -- Two or more races
-        c2mort as two_or_more_total,
-        c2morm as two_or_more_men,
-        c2morw as two_or_more_women,
-        
+        c2mort::number(10,0) as two_or_more_total,
+        c2morm::number(10,0) as two_or_more_men,
+        c2morw::number(10,0) as two_or_more_women,
+
         -- Race/ethnicity unknown
-        cunknt as race_unknown_total,
-        cunknm as race_unknown_men,
-        cunknw as race_unknown_women,
-        
+        cunknt::number(10,0) as race_unknown_total,
+        cunknm::number(10,0) as race_unknown_men,
+        cunknw::number(10,0) as race_unknown_women,
+
         -- U.S. Nonresident (international students)
-        cnralt as nonresident_total,
-        cnralm as nonresident_men,
-        cnralw as nonresident_women
+        cnralt::number(10,0) as nonresident_total,
+        cnralm::number(10,0) as nonresident_men,
+        cnralw::number(10,0) as nonresident_women
 
     from source
     where majornum = 1 -- first major only

@@ -11,6 +11,8 @@ texas_ccs as (
         institution_name,
         city,
         state_code,
+        latitude,
+        longitude,
         sector,
         sector_name,
         control_name,
