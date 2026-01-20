@@ -32,6 +32,7 @@ DATASETS = {
     'EFFY': '12-Month Enrollment',
     'GR': 'Graduation Rates',
     'SFA': 'Student Financial Aid',
+    'EF_D': 'Rental Rates',
 }
 
 # Base URL for IPEDS data
@@ -58,6 +59,9 @@ def download_dataset(dataset: str, year: int) -> pd.DataFrame:
         prev_year = str(year - 1)[-2:]
         curr_year = str(year)[-2:]
         table_name = f'SFA{prev_year}{curr_year}'
+    elif dataset == 'EF_D':
+        # Retention Rates: EF2024D format
+        table_name = f'EF{year}D'
     else:
         # Standard format: HD2023, EFFY2023, GR2023
         table_name = f'{dataset}{year}'
@@ -350,7 +354,7 @@ def main():
     
     print('-' * 80)
     print('Done!')
-    print(f'\nNext step: cd texas_cc_benchmarking && dbt seed')
+    # print(f'\nNext step: cd texas_cc_benchmarking && dbt seed')
 
 
 if __name__ == '__main__':
