@@ -481,3 +481,48 @@ sources:
       - name: gr_2020
         description: 'Graduation Rates for first-time, full-time degree-seeking students 2020'
         columns: *gr_columns
+      
+
+
+      # Retention rates (EF_D tables)
+      - name: ef_d_2024
+        description: 'Fall Enrollment - Retention rates and student-to-faculty ratio 2024'
+        columns: &ef_d_columns
+          - name: UNITID
+            description: 'Unique identification number of the institution'
+          - name: RET_PCF
+            description: 'Full-time retention rate'
+          - name: RET_PCP
+            description: 'Part-time retention rate'
+          - name: STUFACR
+            description: 'Student-to-faculty ratio'
+          - name: UGENTERN
+            description: 'Total entering students at undergraduate level'
+          - name: RRFTCTA
+            description: 'Full-time adjusted fall cohort'
+          - name: RET_NMF
+            description: 'Full-time students retained'
+          - name: RRPTCTA
+            description: 'Part-time adjusted fall cohort'
+          - name: RET_NMP
+            description: 'Part-time students retained'
+          - name: GRCOHRT
+            description: 'Full-time first-time degree/certificate-seeking undergrad (GRS cohort)'
+          - name: PGRCOHRT
+            description: 'GRS cohort as percent of entering class'
+
+      - name: ef_d_2023
+        description: 'Fall Enrollment - Retention rates and student-to-faculty ratio 2023'
+        columns: *ef_d_columns
+
+      - name: ef_d_2022
+        description: 'Fall Enrollment - Retention rates and student-to-faculty ratio 2022'
+        columns: *ef_d_columns
+
+      - name: ef_d_2021
+        description: 'Fall Enrollment - Retention rates and student-to-faculty ratio 2021'
+        columns: *ef_d_columns
+
+      - name: ef_d_2020
+        description: 'Fall Enrollment - Retention rates and student-to-faculty ratio 2020'
+        columns: *ef_d_columns
