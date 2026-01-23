@@ -1,15 +1,15 @@
 # Texas Community College Benchmarking
 
-A dbt project for benchmarking Texas community colleges using IPEDS data. Supports HB8 equity reporting, peer comparisons, and student outcome analytics.
+A dbt project for benchmarking Texas community colleges using IPEDS data. Supports HB8 equity reporting, multi-year trend analysis, peer comparisons, and student outcome analytics.
 
 ## Project Structure
 
 ```txt
 texas_cc_benchmarking/
 ├── models/
-│   ├── staging/          # Clean raw IPEDS data
-│   ├── intermediate/     # Business logic and transformations
-│   └── marts/            # Analytics-ready tables
+│   ├── staging/          # Clean raw IPEDS data (2020-2024)
+│   ├── intermediate/     # Business logic and transformations (Multi-year)
+│   └── marts/            # Analytics-ready tables (Multi-year)
 ├── seeds/                # Static reference data
 └── scripts/              # Data loading utilities
 ```
@@ -18,39 +18,39 @@ texas_cc_benchmarking/
 
 ### Staging Layer
 
-Raw IPEDS data cleaned and renamed:
+Raw IPEDS data cleaned and renamed for the 2020-2024 period:
 
-| Model | IPEDS Survey | Description |
-| ----- | ------------ | ----------- |
-| `stg_ipeds__institutions` | HD | Institution characteristics |
-| `stg_ipeds__enrollment` | EFFY | 12-month enrollment by demographics |
-| `stg_ipeds__completions` | C_A | Awards/degrees by CIP code |
-| `stg_ipeds__financial_aid` | SFA | Pell grants, loans, aid |
-| `stg_ipeds__graduation_rates` | GR | Graduation rates by cohort |
-| `stg_ipeds__retention_rates` | EF_D | Retention rates, student-faculty ratio |
+| Model                         | IPEDS Survey | Description                            |
+| ----------------------------- | ------------ | -------------------------------------- |
+| `stg_ipeds__institutions`     | HD           | Institution characteristics            |
+| `stg_ipeds__enrollment`       | EFFY         | 12-month enrollment by demographics    |
+| `stg_ipeds__completions`      | C_A          | Awards/degrees by CIP code             |
+| `stg_ipeds__financial_aid`    | SFA          | Pell grants, loans, aid                |
+| `stg_ipeds__graduation_rates` | GR           | Graduation rates by cohort             |
+| `stg_ipeds__retention_rates`  | EF_D         | Retention rates, student-faculty ratio |
 
 ### Intermediate Layer
 
-Reusable building blocks with business logic:
+Reusable building blocks with multi-year business logic:
 
-| Model | Description |
-| ----- | ----------- |
-| `int_texas_community_colleges` | Filters to Texas public 2-year institutions |
-| `int_peer_groups` | Peer groupings by size, HSI status, Pell tier, urbanicity |
-| `int_completion_metrics` | Aggregated completions by institution |
-| `int_graduation_rates` | 150% graduation rates with equity gaps |
-| `int_retention_rates` | FT/PT retention with blended rate |
+| Model                          | Description                                               |
+| ------------------------------ | --------------------------------------------------------- |
+| `int_texas_community_colleges` | Filters to Texas public 2-year institutions               |
+| `int_peer_groups`              | Peer groupings by size, HSI status, Pell tier, urbanicity |
+| `int_completion_metrics`       | Multi-year aggregated completions by institution          |
+| `int_graduation_rates`         | Multi-year 150% graduation rates with equity gaps         |
+| `int_retention_rates`          | Multi-year FT/PT retention with blended rate              |
 
 ### Marts Layer
 
-Analytics-ready tables for reporting:
+Analytics-ready tables for reporting across multiple years:
 
-| Model | Description |
-| ----- | ----------- |
-| `dim_texas_institutions` | Institution dimension with all attributes |
-| `fct_student_outcomes` | Combined completion, graduation, retention metrics |
-| `rpt_peer_comparison` | Benchmark institutions against peer group averages |
-| `rpt_equity_dashboard` | HB8 equity gaps and completion equity indices |
+| Model                    | Description                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| `dim_texas_institutions` | Institution dimension with all attributes                                                 |
+| `fct_student_outcomes`   | Multi-year fact table (2020-2024) combining completion, graduation, and retention metrics |
+| `rpt_peer_comparison`    | Benchmark institutions against peer group averages                                        |
+| `rpt_equity_dashboard`   | HB8 equity gaps and completion equity indices                                             |
 
 ## Quick Start
 
@@ -196,11 +196,18 @@ dagster asset materialize --select "*" --partition "2023" -m dagster_pipelines
 
 This will download the IPEDS datasets from 2020 to 2024 and filter for Texas community colleges and load them into Snowflake.
 
-## Running the App
+## Analytics Dashboard
 
-Launch the Streamlit dashboard:
+Launch the Streamlit dashboard for interactive multi-college comparison:
 
 ```bash
 cd dashboard
 streamlit run app.py
 ```
+
+### Key Features:
+
+- **Multi-Year Analysis**: View trends across 2020-2024.
+- **Multi-College Comparison**: Select and compare multiple institutions side-by-side.
+- **Metric Tabs**: Dedicated views for Graduation Rates, Retention, Completions, and Equity metrics.
+- **Slicer Sidebar**: Easy-to-use checkbox list for selecting institutions with search and "Select All" capabilities.
