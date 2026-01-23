@@ -198,6 +198,8 @@ This will download the IPEDS datasets from 2020 to 2024 and filter for Texas com
 
 ## Analytics Dashboard
 
+![Dashboard Screenshot](img/dashboard.png)
+
 Launch the Streamlit dashboard for interactive multi-college comparison:
 
 ```bash
@@ -205,7 +207,7 @@ cd dashboard
 streamlit run app.py
 ```
 
-### Key Features:
+### Key Features
 
 - **Multi-Year Analysis**: View trends across 2020-2024.
 - **Multi-College Comparison**: Select and compare multiple institutions side-by-side.
