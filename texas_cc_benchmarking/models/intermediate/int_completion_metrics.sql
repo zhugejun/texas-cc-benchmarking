@@ -9,10 +9,11 @@ texas_ccs as (
     select unitid from {{ ref('int_texas_community_colleges') }}
 ),
 
--- Aggregate completions by institution and award level
+-- Aggregate completions by institution, year, and award level
 institution_completions as (
     select
         c.unitid,
+        c.year,  -- Include year for multi-year analysis
 
         -- Total completions across all award levels (cast to larger int)
         sum(c.total_completions)::number(10,0) as total_completions,
@@ -44,12 +45,13 @@ institution_completions as (
     from completions c
     inner join texas_ccs t on c.unitid = t.unitid
     where c.cip_code = '99'  -- Grand total across all programs
-    group by c.unitid
+    group by c.unitid, c.year  -- Group by year for multi-year support
 ),
 
 final as (
     select
         unitid,
+        year,  -- Include year for multi-year analysis
         total_completions,
         certificates_under_1yr,
         certificates_1_2yr,

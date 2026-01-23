@@ -12,6 +12,7 @@ texas_ccs as (
 final as (
     select
         r.unitid,
+        r.year,  -- Include year for multi-year analysis
 
         -- Primary retention metrics
         r.full_time_retention_rate,

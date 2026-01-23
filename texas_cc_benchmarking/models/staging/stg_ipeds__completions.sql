@@ -90,7 +90,6 @@ unitid,
 
     from source
     where majornum = 1 -- first major only
-        and year = 2024
 )
 
 

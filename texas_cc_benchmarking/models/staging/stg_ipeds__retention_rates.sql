@@ -41,7 +41,6 @@ renamed as (
         pgrcohrt as grs_cohort_pct_of_entering
 
     from source
-    where year = 2024
 )
 
 select * from renamed

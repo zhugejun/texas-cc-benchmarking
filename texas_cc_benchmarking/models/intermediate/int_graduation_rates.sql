@@ -17,6 +17,7 @@ texas_ccs as (
 texas_cc_graduation as (
     select
         g.unitid,
+        g.year,  -- Include year for multi-year analysis
         g.cohort_type,
         g.total::number(10,0) as total,
         g.total_men::number(10,0) as total_men,
@@ -37,6 +38,7 @@ texas_cc_graduation as (
 pivoted as (
     select
         unitid,
+        year,  -- Include year for multi-year analysis
         -- Adjusted cohort (denominator)
         coalesce(
             max(case when cohort_type = 29 then total end),
@@ -116,12 +118,13 @@ pivoted as (
         ) as transfer_white
 
     from texas_cc_graduation
-    group by unitid
+    group by unitid, year  -- Group by year for multi-year support
 ),
 
 final as (
     select
         unitid,
+        year,  -- Include year for multi-year analysis
 
         -- Cohort sizes
         adjusted_cohort_total,

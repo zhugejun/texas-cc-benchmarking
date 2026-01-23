@@ -33,6 +33,7 @@ texas_ccs as (
     from institutions
     where state_code = 'TX'
         and active_current_year = 1
+        and year = (select max(year) from institutions)  -- Most recent year only
         and (
                        -- Standard public 2-year colleges
             sector = 4

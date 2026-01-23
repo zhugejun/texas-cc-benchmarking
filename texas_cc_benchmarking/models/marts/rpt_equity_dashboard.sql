@@ -23,7 +23,7 @@ final as (
         i.pell_tier,
 
         -- Enrollment demographics
-        i.total_enrollment,
+        i.total_enrollment::number(10,0) as total_enrollment,
         i.pct_hispanic,
         i.pct_black,
         i.pct_white,

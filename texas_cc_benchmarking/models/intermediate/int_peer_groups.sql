@@ -8,10 +8,10 @@ with texas_ccs as (
 enrollment as (
     select
         unitid,
-        total_enrollment,
-        hispanic_total,
-        black_total,
-        white_total,
+        total_enrollment::number(10,0) as total_enrollment,
+        hispanic_total::number(10,0) as hispanic_total,
+        black_total::number(10,0) as black_total,
+        white_total::number(10,0) as white_total,
 
         -- Calculate demographic percentages
         round(hispanic_total * 100.0 / nullif(total_enrollment, 0), 1) as pct_hispanic,
@@ -20,15 +20,17 @@ enrollment as (
 
     from {{ ref('stg_ipeds__enrollment') }}
     where student_level = 1  -- All students total
+        and year = (select max(year) from {{ ref('stg_ipeds__enrollment') }})  -- Most recent year
 ),
 
 financial_aid as (
     select
         unitid,
-        all_ug_pell_recipients_count,
-        undergrad_enrollment_aid,
+        all_ug_pell_recipients_count::number(10,0) as all_ug_pell_recipients_count,
+        undergrad_enrollment_aid::number(10,0) as undergrad_enrollment_aid,
         all_ug_pell_recipients_percent as pct_pell
     from {{ ref('stg_ipeds__financial_aid') }}
+    where year = (select max(year) from {{ ref('stg_ipeds__financial_aid') }})  -- Most recent year
 ),
 
 peer_groups as (

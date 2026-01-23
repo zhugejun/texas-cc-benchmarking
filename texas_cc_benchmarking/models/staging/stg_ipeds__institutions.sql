@@ -152,7 +152,6 @@ renamed as (
         athurl as athlete_graduation_rate_url,
         disaurl as disability_services_url
     from source
-    where year = 2024
 )
 
 

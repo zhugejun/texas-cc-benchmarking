@@ -16,6 +16,7 @@ with source as (
 renamed as (
     select 
         unitid,
+        year,  -- Added for multi-year support
           
           -- Cohort identifying information (CRITICAL for understanding the data)
           grtype as cohort_type,
@@ -145,7 +146,6 @@ renamed as (
           grnralw::number(10,0) as nonresident_women
         
     from source
-    where year = 2024
 )
 
 

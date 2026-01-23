@@ -31,23 +31,23 @@ final as (
         i.locale_type,
 
         -- Peer group attributes
-        p.total_enrollment,
+        p.total_enrollment::number(10,0) as total_enrollment,
         p.size_tier,
         p.is_hsi,
         p.pell_tier,
         p.urbanicity,
 
-        -- Demographics
-        p.pct_hispanic,
-        p.pct_black,
-        p.pct_white,
-        p.pct_pell,
+        -- Demographics (cast percentages)
+        p.pct_hispanic::number(10,2) as pct_hispanic,
+        p.pct_black::number(10,2) as pct_black,
+        p.pct_white::number(10,2) as pct_white,
+        p.pct_pell::number(10,2) as pct_pell,
 
-        -- Retention & efficiency metrics
-        r.full_time_retention_rate,
-        r.part_time_retention_rate,
-        r.overall_retention_rate,
-        r.student_faculty_ratio
+        -- Retention & efficiency metrics (cast rates)
+        r.full_time_retention_rate::number(10,2) as full_time_retention_rate,
+        r.part_time_retention_rate::number(10,2) as part_time_retention_rate,
+        r.overall_retention_rate::number(10,2) as overall_retention_rate,
+        r.student_faculty_ratio::number(10,2) as student_faculty_ratio
 
     from institutions i
     left join peer_groups p on i.unitid = p.unitid
