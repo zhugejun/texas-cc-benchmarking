@@ -48,17 +48,36 @@ st.markdown("""
 # Snowflake connection
 @st.cache_resource
 def get_engine():
-    profiles_path = Path.home() / '.dbt' / 'profiles.yml'
-    with open(profiles_path) as f:
-        profiles = yaml.safe_load(f)
-    profile = profiles['texas_cc_benchmarking']['outputs']['dev']
+    # Try Streamlit Cloud secrets first, fall back to local profiles.yml
+    if "SNOWFLAKE_ACCOUNT" in st.secrets:
+        # Streamlit Cloud deployment
+        account = st.secrets["SNOWFLAKE_ACCOUNT"]
+        user = st.secrets["SNOWFLAKE_USER"]
+        password = st.secrets["SNOWFLAKE_PASSWORD"]
+        database = st.secrets.get("SNOWFLAKE_DATABASE", "TEXAS_CC")
+        schema = st.secrets.get("SNOWFLAKE_SCHEMA", "DBT_GEJUN")
+        warehouse = st.secrets.get("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH")
+        role = st.secrets.get("SNOWFLAKE_ROLE", None)
+    else:
+        # Local development - read from dbt profiles
+        profiles_path = Path.home() / '.dbt' / 'profiles.yml'
+        with open(profiles_path) as f:
+            profiles = yaml.safe_load(f)
+        profile = profiles['texas_cc_benchmarking']['outputs']['dev']
+        account = profile['account']
+        user = profile['user']
+        password = profile['password']
+        database = profile.get('database', 'TEXAS_CC')
+        schema = profile.get('schema', 'DBT_GEJUN')
+        warehouse = profile.get('warehouse', 'COMPUTE_WH')
+        role = profile.get('role')
+
     connection_string = (
-        f"snowflake://{profile['user']}:{quote_plus(profile['password'])}@{profile['account']}/"
-        f"{profile.get('database', 'TEXAS_CC')}/{profile.get('schema', 'DBT_GEJUN')}"
-        f"?warehouse={profile.get('warehouse', 'COMPUTE_WH')}"
+        f"snowflake://{user}:{quote_plus(password)}@{account}/"
+        f"{database}/{schema}?warehouse={warehouse}"
     )
-    if profile.get('role'):
-        connection_string += f"&role={profile['role']}"
+    if role:
+        connection_string += f"&role={role}"
     return create_engine(connection_string)
 
 
