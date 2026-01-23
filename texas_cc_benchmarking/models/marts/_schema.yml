@@ -1,0 +1,404 @@
+version: 2
+
+models:
+  - name: dim_texas_institutions
+    description: >
+      Dimension table containing Texas community college institutional characteristics,
+      peer group classifications, and key demographic attributes. This table serves as the
+      primary reference for all Texas community colleges included in HB8 benchmarking analysis.
+    columns:
+      - name: unitid
+        description: IPEDS unique institution identifier
+        tests:
+          - unique
+          - not_null
+
+      - name: institution_name
+        description: Official name of the institution
+        tests:
+          - not_null
+
+      - name: city
+        description: City where the institution is located
+
+      - name: state_code
+        description: Two-letter state code (should always be TX for this dataset)
+
+      - name: latitude
+        description: Geographic latitude coordinate for mapping
+
+      - name: longitude
+        description: Geographic longitude coordinate for mapping
+
+      - name: website_url
+        description: Institution's official website URL
+
+      - name: sector_name
+        description: IPEDS sector classification (e.g., Public 2-year)
+
+      - name: control_name
+        description: Institutional control (Public, Private nonprofit, Private for-profit)
+
+      - name: size_category_name
+        description: IPEDS size category based on total enrollment
+
+      - name: locale_type
+        description: Urban-centric locale classification
+
+      - name: total_enrollment
+        description: Total 12-month unduplicated headcount enrollment
+
+      - name: size_tier
+        description: >
+          Peer grouping size tier (Small: <2,500, Medium: 2,500-7,500, Large: >7,500)
+
+      - name: is_hsi
+        description: >
+          Hispanic-Serving Institution flag (true if >=25% Hispanic enrollment)
+
+      - name: pell_tier
+        description: >
+          Pell grant recipient tier (Low: <35%, Medium: 35-50%, High: >50%)
+
+      - name: urbanicity
+        description: >
+          Urbanicity classification (Urban, Suburban, Rural)
+
+      - name: pct_hispanic
+        description: Percentage of enrollment that is Hispanic/Latino
+
+      - name: pct_black
+        description: Percentage of enrollment that is Black/African American
+
+      - name: pct_white
+        description: Percentage of enrollment that is White
+
+      - name: pct_pell
+        description: Percentage of undergraduates receiving Pell grants
+
+      - name: full_time_retention_rate
+        description: First-time, full-time student retention rate (fall-to-fall)
+
+      - name: part_time_retention_rate
+        description: First-time, part-time student retention rate (fall-to-fall)
+
+      - name: overall_retention_rate
+        description: Overall first-time student retention rate (weighted average)
+
+      - name: student_faculty_ratio
+        description: Student-to-faculty ratio
+
+  - name: fct_student_outcomes
+    description: >
+      Fact table containing comprehensive student outcome metrics for Texas community colleges,
+      including completions, graduation rates, retention rates, and demographic breakdowns.
+      This is the primary analytical table for measuring institutional effectiveness under HB8.
+    columns:
+      - name: unitid
+        description: IPEDS unique institution identifier
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_texas_institutions')
+              field: unitid
+
+      - name: institution_name
+        description: Official name of the institution
+
+      - name: total_completions
+        description: Total number of completions awarded (all credential types)
+
+      - name: associate_degrees
+        description: Number of associate degrees awarded
+
+      - name: total_certificates
+        description: Total number of certificates awarded (all lengths)
+
+      - name: certificates_under_1yr
+        description: Number of certificates awarded for programs under 1 year
+
+      - name: certificates_1_2yr
+        description: Number of certificates awarded for programs 1-2 years
+
+      - name: pct_associate_hispanic
+        description: Percentage of associate degree completers who are Hispanic/Latino
+
+      - name: pct_associate_black
+        description: Percentage of associate degree completers who are Black/African American
+
+      - name: pct_associate_white
+        description: Percentage of associate degree completers who are White
+
+      - name: pct_associate_men
+        description: Percentage of associate degree completers who are men
+
+      - name: pct_associate_women
+        description: Percentage of associate degree completers who are women
+
+      - name: graduation_rate_150
+        description: >
+          Graduation rate at 150% of normal time (3 years for 2-year programs)
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+              inclusive: true
+
+      - name: transfer_out_rate
+        description: Percentage of cohort that transferred to another institution
+
+      - name: success_rate
+        description: >
+          Combined success rate (graduation rate + transfer-out rate)
+
+      - name: grad_rate_hispanic
+        description: Graduation rate for Hispanic/Latino students
+
+      - name: grad_rate_black
+        description: Graduation rate for Black/African American students
+
+      - name: grad_rate_white
+        description: Graduation rate for White students
+
+      - name: grad_rate_men
+        description: Graduation rate for men
+
+      - name: grad_rate_women
+        description: Graduation rate for women
+
+      - name: equity_gap_hispanic
+        description: >
+          Graduation rate gap between White and Hispanic students (positive = gap exists)
+
+      - name: equity_gap_black
+        description: >
+          Graduation rate gap between White and Black students (positive = gap exists)
+
+      - name: full_time_retention_rate
+        description: First-time, full-time student retention rate
+
+      - name: part_time_retention_rate
+        description: First-time, part-time student retention rate
+
+      - name: overall_retention_rate
+        description: Overall first-time student retention rate
+
+      - name: graduation_cohort_size
+        description: >
+          Size of the adjusted cohort used for graduation rate calculations
+
+      - name: retention_cohort_size
+        description: >
+          Total number of first-time students used for retention rate calculations
+
+  - name: rpt_equity_dashboard
+    description: >
+      Equity-focused reporting table for HB8 compliance. Provides equity gap analysis,
+      completion equity indices, and severity classifications for monitoring disparities
+      in student outcomes across racial/ethnic groups.
+    columns:
+      - name: unitid
+        description: IPEDS unique institution identifier
+        tests:
+          - not_null
+
+      - name: institution_name
+        description: Official name of the institution
+
+      - name: city
+        description: City where the institution is located
+
+      - name: is_hsi
+        description: Hispanic-Serving Institution flag
+
+      - name: pell_tier
+        description: Pell grant recipient tier classification
+
+      - name: total_enrollment
+        description: Total 12-month unduplicated headcount enrollment
+
+      - name: pct_hispanic
+        description: Percentage of enrollment that is Hispanic/Latino
+
+      - name: pct_black
+        description: Percentage of enrollment that is Black/African American
+
+      - name: pct_white
+        description: Percentage of enrollment that is White
+
+      - name: pct_pell
+        description: Percentage of undergraduates receiving Pell grants
+
+      - name: overall_grad_rate
+        description: Overall 150% graduation rate
+
+      - name: grad_rate_hispanic
+        description: Graduation rate for Hispanic/Latino students
+
+      - name: grad_rate_black
+        description: Graduation rate for Black/African American students
+
+      - name: grad_rate_white
+        description: Graduation rate for White students
+
+      - name: equity_gap_hispanic
+        description: >
+          Graduation rate gap: White rate minus Hispanic rate (positive = gap exists)
+
+      - name: equity_gap_black
+        description: >
+          Graduation rate gap: White rate minus Black rate (positive = gap exists)
+
+      - name: hispanic_gap_severity
+        description: >
+          Categorical classification of Hispanic equity gap severity
+          (Large Gap 10%+, Moderate Gap 5-10%, Small Gap <5%, No Gap/Outperforming)
+
+      - name: black_gap_severity
+        description: >
+          Categorical classification of Black equity gap severity
+          (Large Gap 10%+, Moderate Gap 5-10%, Small Gap <5%, No Gap/Outperforming)
+
+      - name: pct_associate_hispanic
+        description: Percentage of associate degree completers who are Hispanic/Latino
+
+      - name: pct_associate_black
+        description: Percentage of associate degree completers who are Black/African American
+
+      - name: pct_associate_white
+        description: Percentage of associate degree completers who are White
+
+      - name: hispanic_completion_equity_index
+        description: >
+          Completion equity index for Hispanic students
+          (completion % / enrollment %; >1 = overrepresented in completions)
+
+      - name: black_completion_equity_index
+        description: >
+          Completion equity index for Black students
+          (completion % / enrollment %; >1 = overrepresented in completions)
+
+      - name: white_completion_equity_index
+        description: >
+          Completion equity index for White students
+          (completion % / enrollment %; >1 = overrepresented in completions)
+
+      - name: grad_rate_men
+        description: Graduation rate for men
+
+      - name: grad_rate_women
+        description: Graduation rate for women
+
+      - name: pct_associate_men
+        description: Percentage of associate degree completers who are men
+
+      - name: pct_associate_women
+        description: Percentage of associate degree completers who are women
+
+      - name: overall_retention_rate
+        description: Overall first-time student retention rate
+
+      - name: graduation_cohort_size
+        description: Size of cohort used for graduation rate calculations
+
+      - name: associate_hispanic
+        description: Number of Hispanic/Latino students earning associate degrees
+
+      - name: associate_black
+        description: Number of Black/African American students earning associate degrees
+
+      - name: associate_white
+        description: Number of White students earning associate degrees
+
+  - name: rpt_peer_comparison
+    description: >
+      Peer comparison reporting table for HB8 benchmarking. Compares each institution's
+      performance metrics against peer group averages based on size, HSI status, Pell tier,
+      and urbanicity to provide contextual performance analysis.
+    columns:
+      - name: unitid
+        description: IPEDS unique institution identifier
+        tests:
+          - not_null
+
+      - name: institution_name
+        description: Official name of the institution
+
+      - name: city
+        description: City where the institution is located
+
+      - name: size_tier
+        description: Institution size tier for peer grouping
+
+      - name: is_hsi
+        description: Hispanic-Serving Institution flag for peer grouping
+
+      - name: pell_tier
+        description: Pell grant recipient tier for peer grouping
+
+      - name: urbanicity
+        description: Urbanicity classification for peer grouping
+
+      - name: peer_group_count
+        description: Number of institutions in this peer group
+
+      - name: graduation_rate_150
+        description: Institution's 150% graduation rate
+
+      - name: success_rate
+        description: Institution's combined success rate (graduation + transfer-out)
+
+      - name: full_time_retention_rate
+        description: Institution's full-time retention rate
+
+      - name: overall_retention_rate
+        description: Institution's overall retention rate
+
+      - name: associate_degrees
+        description: Number of associate degrees awarded by institution
+
+      - name: student_faculty_ratio
+        description: Institution's student-to-faculty ratio
+
+      - name: peer_avg_grad_rate
+        description: Peer group average graduation rate
+
+      - name: peer_avg_success_rate
+        description: Peer group average success rate
+
+      - name: peer_avg_ft_retention
+        description: Peer group average full-time retention rate
+
+      - name: peer_avg_overall_retention
+        description: Peer group average overall retention rate
+
+      - name: peer_avg_associate_degrees
+        description: Peer group average number of associate degrees awarded
+
+      - name: peer_avg_student_faculty_ratio
+        description: Peer group average student-to-faculty ratio
+
+      - name: grad_rate_vs_peers
+        description: >
+          Difference between institution and peer average graduation rate
+          (positive = above peers)
+
+      - name: success_rate_vs_peers
+        description: >
+          Difference between institution and peer average success rate
+          (positive = above peers)
+
+      - name: ft_retention_vs_peers
+        description: >
+          Difference between institution and peer average full-time retention
+          (positive = above peers)
+
+      - name: overall_retention_vs_peers
+        description: >
+          Difference between institution and peer average overall retention
+          (positive = above peers)
+
+      - name: grad_rate_performance
+        description: >
+          Categorical performance classification relative to peers
+          (Above Peers: +5% or more, At Peer Average: ±5%, Below Peers: -5% or more)
