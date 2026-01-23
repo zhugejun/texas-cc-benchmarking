@@ -99,8 +99,9 @@ models:
         tests:
           - not_null
           - relationships:
-              to: ref('dim_texas_institutions')
-              field: unitid
+              arguments:
+                to: ref('dim_texas_institutions')
+                field: unitid
 
       - name: institution_name
         description: Official name of the institution
@@ -140,9 +141,10 @@ models:
           Graduation rate at 150% of normal time (3 years for 2-year programs)
         tests:
           - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 100
-              inclusive: true
+              arguments:
+                min_value: 0
+                max_value: 100
+                inclusive: true
 
       - name: transfer_out_rate
         description: Percentage of cohort that transferred to another institution
