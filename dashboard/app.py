@@ -20,20 +20,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Custom CSS - Blue theme with dark mode support
 st.markdown("""
     <style>
     .main { padding-top: 1rem; }
     .stMetric {
-        background-color: #f0f2f6;
+        background-color: rgba(30, 64, 175, 0.1);
         padding: 15px;
         border-radius: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border: 1px solid rgba(59, 130, 246, 0.3);
     }
-    h1 { color: #1f1f1f; font-weight: 700; }
-    h2, h3 { color: #444; }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
     }
     [data-testid="stSidebar"] .stMarkdown { color: white; }
     [data-testid="stSidebar"] .stExpander {
@@ -49,7 +47,13 @@ st.markdown("""
 @st.cache_resource
 def get_engine():
     # Try Streamlit Cloud secrets first, fall back to local profiles.yml
-    if "SNOWFLAKE_ACCOUNT" in st.secrets:
+    use_secrets = False
+    try:
+        use_secrets = "SNOWFLAKE_ACCOUNT" in st.secrets
+    except FileNotFoundError:
+        pass
+
+    if use_secrets:
         # Streamlit Cloud deployment
         account = st.secrets["SNOWFLAKE_ACCOUNT"]
         user = st.secrets["SNOWFLAKE_USER"]
@@ -243,7 +247,7 @@ with tab_overview:
         orientation='h',
         labels={'GRADUATION_RATE_150': 'Graduation Rate (%)', 'INSTITUTION_NAME': ''},
         color='GRADUATION_RATE_150',
-        color_continuous_scale='Purples'
+        color_continuous_scale='Blues'
     )
     fig.update_layout(height=max(400, len(chart_data) * 20), showlegend=False)  # Bar chart doesn't need legend
     fig.update_yaxes(rangemode='tozero')
@@ -291,7 +295,7 @@ with tab_graduation:
         color='YEAR',
         barmode='group',
         labels={'INSTITUTION_NAME': '', 'GRADUATION_RATE_150': 'Graduation Rate (%)', 'YEAR': 'Year'},
-        color_discrete_sequence=px.colors.sequential.Purples_r
+        color_discrete_sequence=px.colors.sequential.Blues_r
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
     fig.update_yaxes(rangemode='tozero')
@@ -495,7 +499,7 @@ with tab_equity:
         color='Demographic',
         barmode='group',
         labels={'INSTITUTION_NAME': ''},
-        color_discrete_map={'Hispanic': '#667eea', 'Black': '#764ba2', 'White': '#a0aec0'}
+        color_discrete_map={'Hispanic': '#3b82f6', 'Black': '#1e40af', 'White': '#94a3b8'}
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
     fig.update_yaxes(rangemode='tozero')
@@ -516,7 +520,7 @@ with tab_equity:
                 'EQUITY_GAP_HISPANIC': 'Hispanic Gap (pp)',
                 'EQUITY_GAP_BLACK': 'Black Gap (pp)'
             },
-            color_discrete_sequence=['#667eea']
+            color_discrete_sequence=['#3b82f6']
         )
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
         fig.add_vline(x=0, line_dash="dash", line_color="gray")
