@@ -1,0 +1,10 @@
+# Local DuckDB profile for the Texas CC Benchmarking project.
+# No external warehouse required — everything runs against a local DuckDB file.
+# dbt picks this up automatically when run from inside this project directory.
+texas_cc_benchmarking:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: texas_cc.duckdb
+      threads: 4

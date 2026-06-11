@@ -5,16 +5,10 @@ description = "Texas Community College Benchmarking"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "dagster>=1.12.11",
-    "dagster-dbt>=0.28.11",
-    "dagster-snowflake>=0.28.11",
-    "dagster-webserver>=1.12.11",
-    "dbt-snowflake>=1.11.1",
+    "dbt-duckdb>=1.10.1",
+    "duckdb>=1.5.3",
     "pandas>=2.3.3",
     "plotly>=6.5.2",
-    "pyyaml>=6.0.3",
     "requests>=2.32.5",
-    "snowflake-connector-python>=4.2.0",
-    "snowflake-sqlalchemy>=1.8.2",
     "streamlit>=1.53.0",
 ]
