@@ -106,6 +106,7 @@ Thumbs.db
 
 # Credentials (never commit these!)
 profiles.yml
+!texas_cc_benchmarking/profiles.yml
 *.env
 .env
 .env.local
