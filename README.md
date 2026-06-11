@@ -2,6 +2,8 @@
 
 A dbt project for benchmarking Texas community colleges using IPEDS data. Supports HB8 equity reporting, multi-year trend analysis, peer comparisons, and student outcome analytics.
 
+Everything runs **locally against [DuckDB](https://duckdb.org/)** — no cloud data warehouse required.
+
 ## Project Structure
 
 ```txt
@@ -10,8 +12,11 @@ texas_cc_benchmarking/
 │   ├── staging/          # Clean raw IPEDS data (2020-2024)
 │   ├── intermediate/     # Business logic and transformations (Multi-year)
 │   └── marts/            # Analytics-ready tables (Multi-year)
-├── seeds/                # Static reference data
-└── scripts/              # Data loading utilities
+├── seeds/                # Raw IPEDS CSVs (2020-2024), read as views by DuckDB
+├── macros/               # create_raw_ipeds_views: exposes the CSVs as the raw_ipeds source
+└── profiles.yml          # Local DuckDB connection (no secrets)
+dashboard/                # Streamlit dashboard
+scripts/                  # IPEDS download utility
 ```
 
 ## Data Models
@@ -57,155 +62,67 @@ Analytics-ready tables for reporting across multiple years:
 ### Prerequisites
 
 - Python 3.12
-- Snowflake account
-- dbt-snowflake
+- [uv](https://github.com/astral-sh/uv) for dependency management
 
-### Python
+### Install dependencies
 
-Create a virtual environment and install dependencies:
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
-
-This project uses [uv](https://github.com/astral-sh/uv) for dependency management.
+This project uses [uv](https://github.com/astral-sh/uv). From the repo root:
 
 ```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-uv init
+curl -LsSf https://astral.sh/uv/install.sh | sh   # if you don't have uv yet
 uv sync
-uv add dbt-snowflake dagster-snowflake dagster-webserver dagster-dbt dagster pandas requests
 ```
 
-### Snowflake
+That installs everything you need: `dbt-duckdb`, `duckdb`, `pandas`, `plotly`,
+`requests`, and `streamlit`.
 
-1. **Create a Snowflake account** at [signup.snowflake.com](https://signup.snowflake.com/)
-   - Select a cloud provider and region (recommend AWS US East)
-   - Note your account URL, username, and password
+### Build the data
 
-2. **Run the setup script** to create the database structure:
-   - Log into your Snowflake account
-   - Open a new SQL worksheet
-   - Copy and paste the contents of `setup/snowflake_setup.sql`
-   - Execute the entire script (this will create warehouse, database, schemas, and tables)
-
-3. **Configure Snowflake credentials**:
-   - Save your credentials securely (you'll need them for dbt and Dagster)
-   - Recommended: Use environment variables or a `.env` file (don't commit credentials!)
-
-### dbt
-
-Initialize a dbt project:
-
-```bash
-dbt init
-```
-
-When prompted:
-
-- **Project name**: `texas_cc_benchmarking`
-- **Database**: Choose `1`
-- **Account**: Your Snowflake account identifier (e.g., `abcxyz-12345`)
-- **Username**: Your Snowflake username
-- **Password**: Choose `1` for password authentication, and enter your password
-- **Role**: `ACCOUNTADMIN`
-- **Warehouse**: `COMPUTE_WH`
-- **Database**: `TEXAS_CC`
-- **Schema**: `STAGING`
-- **Threads**: `4` (default)
-
-**Verify the connection:**
+The raw IPEDS CSVs (2020-2024) are already committed under
+`texas_cc_benchmarking/seeds/`. dbt reads them directly as DuckDB views (via the
+`create_raw_ipeds_views` macro / `on-run-start` hook), so there is **no separate
+load step** — just build:
 
 ```bash
 cd texas_cc_benchmarking
-dbt debug
+uv run dbt deps      # first time only: installs dbt_utils
+uv run dbt build     # builds all models, runs tests
 ```
 
-You should see "All checks passed!" at the end.
-
-## Data
-
-There are two ways to get the data and load it into Snowflake:
-
-### Option 1: Manual Download and Upload
-
-#### Step 1: Download IPEDS data
+This creates `texas_cc.duckdb` in the `texas_cc_benchmarking/` directory with all
+staging, intermediate, and mart tables. Verify the connection any time with:
 
 ```bash
-python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 --filter-texas
+uv run dbt debug     # should print "All checks passed!"
 ```
 
-This will download the IPEDS datasets from 2020 to 2024 and filter for Texas community colleges.
+> The DuckDB connection is configured in `texas_cc_benchmarking/profiles.yml`
+> (`type: duckdb`, `path: texas_cc.duckdb`). dbt picks it up automatically when run
+> from inside the project directory — no `~/.dbt/profiles.yml` needed.
 
-#### Step 2: Upload seeds to Snowflake
+### (Optional) Refresh the raw data
 
-`dbt seed` will load the data from the `seeds` directory into the `STAGING` schema in Snowflake. However, it will take a while. So we can use the `upload_to_snowflake.py` script to upload the data to Snowflake.
+To re-download fresh IPEDS files into `seeds/`:
 
 ```bash
-python scripts/upload_to_snowflake.py
+uv run python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 --filter-texas
 ```
 
-### Option 2: Automated with Dagster
-
-#### Step 1: Initialize a Dagster project with dbt integration
-
-```bash
-# From the project root (make sure you're in the parent directory)
-cd ..
-dagster-dbt project scaffold --project-name dagster_pipelines --dbt-project-dir ./texas_cc_benchmarking
-```
-
-This creates a `dagster_pipelines/` folder with:
-
-- Asset definitions
-- Resources (for Snowflake connection)
-- Configuration files
-
-#### Step 2: Configure profiles directory
-
-The scaffold command may not correctly set the dbt profiles directory. Update `dagster_pipelines/dagster_pipelines/project.py`:
-
-```python
-texas_cc_benchmarking_project = DbtProject(
-    project_dir=Path(__file__).joinpath("..", "..", "..", "texas_cc_benchmarking").resolve(),
-    packaged_project_dir=Path(__file__).joinpath("..", "..", "dbt-project").resolve(),
-    profiles_dir=Path.home() / ".dbt",  # Add this line
-)
-```
-
-#### Step 3: Verify Dagster setup
-
-```bash
-cd dagster_pipelines
-dagster dev
-
-# If port 3000 is already in use, specify a different port:
-# dagster dev --port 3001
-```
-
-The Dagster UI should open at http://localhost:3000 (or your specified port).
-
-#### Step 4: Run the pipeline
-
-If we want to materialize all datasets for year 2023, run:
-
-```bash
-dagster asset materialize --select "*" --partition "2023" -m dagster_pipelines
-```
-
-This will download the IPEDS datasets from 2020 to 2024 and filter for Texas community colleges and load them into Snowflake.
+Then re-run `dbt build`.
 
 ## Analytics Dashboard
 
 ![Dashboard Screenshot](img/dashboard.png)
 
-Launch the Streamlit dashboard for interactive multi-college comparison:
+Launch the Streamlit dashboard for interactive multi-college comparison. It reads
+the local `texas_cc.duckdb` produced by `dbt build`:
 
 ```bash
-cd dashboard
-streamlit run app.py
+uv run streamlit run dashboard/app.py
 ```
+
+By default the dashboard opens `texas_cc_benchmarking/texas_cc.duckdb`. To point it
+at a different database file, set the `DUCKDB_PATH` environment variable.
 
 ### Key Features
 
