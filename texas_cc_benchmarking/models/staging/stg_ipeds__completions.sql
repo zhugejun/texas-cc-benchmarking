@@ -15,7 +15,7 @@ with source as (
 
 renamed as (
     select
-unitid,
+        unitid,
         cipcode as cip_code,
         awlevel as award_level,
         majornum as major_number,
