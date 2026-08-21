@@ -15,8 +15,14 @@ texas_cc_benchmarking/
 ├── seeds/                # Raw IPEDS CSVs (2020-2024), read as views by DuckDB
 ├── macros/               # create_raw_ipeds_views: exposes the CSVs as the raw_ipeds source
 └── profiles.yml          # Local DuckDB connection (no secrets)
-dashboard/                # Streamlit dashboard
-scripts/                  # IPEDS download utility
+dashboard/
+├── app.py                # Streamlit dashboard (interactive, needs Python)
+├── template.html         # Markup/CSS/JS for the standalone build
+└── build_html.py         # Builds a single self-contained HTML file
+scripts/
+├── download_ipeds.py     # IPEDS download utility
+└── export_marts.py       # Marts -> CSV/Parquet for Power BI, Excel, Tableau
+docs/powerbi.md           # Building the report in Power BI
 ```
 
 ## Data Models
@@ -130,3 +136,44 @@ at a different database file, set the `DUCKDB_PATH` environment variable.
 - **Multi-College Comparison**: Select and compare multiple institutions side-by-side.
 - **Metric Tabs**: Dedicated views for Graduation Rates, Retention, Completions, and Equity metrics.
 - **Slicer Sidebar**: Easy-to-use checkbox list for selecting institutions with search and "Select All" capabilities.
+
+## Other Output Formats
+
+The marts are small (55 colleges x 5 years), so the dashboard does not actually
+need a server. Two alternatives to Streamlit ship with the project.
+
+### Standalone HTML file
+
+Builds one self-contained `.html` with the data embedded and every filter, tab,
+and chart running client-side. No Python, no server, works offline, and can be
+emailed or dropped on SharePoint as a single file.
+
+```bash
+uv run python dashboard/build_html.py
+# -> dashboard/dist/texas_cc_dashboard.html  (~4.9 MB, plotly.js inlined)
+```
+
+Double-click the result to open it. It has the same five tabs, college
+checkboxes, search, and blue/gray highlighting as the Streamlit app.
+
+Pass `--cdn` for a ~90 KB file that loads plotly.js from the CDN instead of
+inlining it — smaller, but it then requires internet access to draw the charts.
+Use `--out` to write somewhere else.
+
+### Power BI / Excel / Tableau
+
+Power BI Desktop is Windows-only and has no DuckDB connector, so the hand-off is
+a folder of flat files:
+
+```bash
+uv run python scripts/export_marts.py              # exports/*.csv
+uv run python scripts/export_marts.py --format parquet
+```
+
+Copy `exports/` to the machine running Power BI Desktop. See
+[docs/powerbi.md](docs/powerbi.md) for the import steps, the relationship to
+create, DAX measures matching the dashboard cards, and a visual-by-visual
+mapping of the five tabs.
+
+Both `exports/` and `dashboard/dist/` are gitignored — they are build outputs,
+regenerated from `texas_cc.duckdb` any time.
