@@ -35,120 +35,110 @@ DATASETS = {
     'EF_D': 'Rental Rates',
 }
 
-# Base URL for IPEDS data
-BASE_URL = 'https://nces.ed.gov/ipeds/datacenter/data'
+# IPEDS serves complete data files from two paths: newer years (2023+) live
+# under /complete-data-files/, older years remain under /datacenter/data/.
+# Try both so any year resolves without a hardcoded cutoff.
+BASE_URLS = [
+    'https://nces.ed.gov/ipeds/complete-data-files',
+    'https://nces.ed.gov/ipeds/datacenter/data',
+]
+
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+}
+
+
+def get_table_name(dataset: str, year: int) -> str:
+    """Build the IPEDS table name (zip basename) for a dataset/year."""
+    if dataset == 'C_A':
+        # Completions: C2023_A format
+        return f'C{year}_A'
+    elif dataset == 'SFA':
+        # Student Financial Aid: SFA2324 format (academic year)
+        prev_year = str(year - 1)[-2:]
+        curr_year = str(year)[-2:]
+        return f'SFA{prev_year}{curr_year}'
+    elif dataset == 'EF_D':
+        # Retention Rates: EF2024D format
+        return f'EF{year}D'
+    else:
+        # Standard format: HD2023, EFFY2023, GR2023
+        return f'{dataset}{year}'
+
+
+def read_zip_csv(content: bytes, table_name: str) -> pd.DataFrame:
+    """Extract the data CSV from an IPEDS zip and return it as a DataFrame."""
+    with zipfile.ZipFile(io.BytesIO(content)) as z:
+        csv_files = [f for f in z.namelist() if f.lower().endswith('.csv')]
+
+        if not csv_files:
+            print(f'    [ERROR] No CSV file found in {table_name}.zip')
+            return None
+
+        # Prefer the base file over the revised (_rv) companion when both ship
+        csv_files.sort(key=lambda f: ('_rv' in f.lower(), f.lower()))
+        csv_filename = csv_files[0]
+        print(f'    [INFO] Extracting {csv_filename}...')
+
+        # IPEDS mixes UTF-8 and latin-1 across years
+        for encoding in ('utf-8-sig', 'latin-1'):
+            try:
+                with z.open(csv_filename) as csv_file:
+                    return pd.read_csv(csv_file, encoding=encoding, low_memory=False)
+            except UnicodeDecodeError:
+                continue
+
+    print(f'    [ERROR] Could not decode {csv_filename}')
+    return None
 
 
 def download_dataset(dataset: str, year: int) -> pd.DataFrame:
     """
     Download a single IPEDS dataset and return as DataFrame.
-    
+
     Args:
         dataset: Dataset code (e.g., 'HD', 'C_A')
         year: Year to download (e.g., 2023)
-        
+
     Returns:
         DataFrame with the data, or None if download fails
     """
-    # Construct filename based on dataset type
-    if dataset == 'C_A':
-        # Completions: C2023_A format
-        table_name = f'C{year}_A'
-    elif dataset == 'SFA':
-        # Student Financial Aid: SFA2324 format (academic year)
-        prev_year = str(year - 1)[-2:]
-        curr_year = str(year)[-2:]
-        table_name = f'SFA{prev_year}{curr_year}'
-    elif dataset == 'EF_D':
-        # Retention Rates: EF2024D format
-        table_name = f'EF{year}D'
-    else:
-        # Standard format: HD2023, EFFY2023, GR2023
-        table_name = f'{dataset}{year}'
-    
-    # For 2023+, use the new data-generator API
-    if year >= 2023:
-        import time
-        timestamp = str(int(time.time() * 1000))
-        url = f'https://nces.ed.gov/ipeds/data-generator?year={year}&tableName={table_name}&HasRV=0&type=csv&t={timestamp}'
+    table_name = get_table_name(dataset, year)
+
+    last_error = None
+    for base_url in BASE_URLS:
+        url = f'{base_url}/{table_name}.zip'
         print(f'  Downloading {year}: {url}')
-        
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
+
         try:
-            response = requests.get(url, headers=headers, timeout=300)
+            response = requests.get(url, headers=HEADERS, timeout=300)
             response.raise_for_status()
-            
-            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-                csv_files = [f for f in z.namelist() if f.lower().endswith('.csv')]
-                
-                if not csv_files:
-                    print(f'    [ERROR] No CSV file found in download')
-                    return None
-                
-                csv_filename = csv_files[0]
-                print(f'    [INFO] Extracting {csv_filename}...')
-                
-                # Read CSV into DataFrame
-                with z.open(csv_filename) as csv_file:
-                    df = pd.read_csv(csv_file, encoding='utf-8', low_memory=False)
-            
-            # Add YEAR column
-            df['YEAR'] = year
-            
-            print(f'    [SUCCESS] Loaded {len(df):,} rows, {len(df.columns)} columns')
-            return df
-            
         except requests.exceptions.RequestException as e:
+            last_error = e
+            status = getattr(e.response, 'status_code', None)
+            if status == 404:
+                print(f'    [INFO] Not at this path (404), trying next...')
+                continue
             print(f'    [ERROR] Failed to download: {e}')
-            return None
+            continue
+
+        try:
+            df = read_zip_csv(response.content, table_name)
         except zipfile.BadZipFile as e:
             print(f'    [ERROR] Invalid zip file: {e}')
             return None
-    
-    # For pre-2023, use the old ZIP format
-    else:
-        url = f'{BASE_URL}/{table_name}.zip'
-        print(f'  Downloading {year}: {url}')
-        
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
-        
-        try:
-            # Download the zip file
-            response = requests.get(url, headers=headers, timeout=300)
-            response.raise_for_status()
-            
-            # Extract CSV from zip
-            with zipfile.ZipFile(io.BytesIO(response.content)) as z:
-                csv_files = [f for f in z.namelist() if f.lower().endswith('.csv')]
-                
-                if not csv_files:
-                    print(f'    [ERROR] No CSV file found in {table_name}.zip')
-                    return None
-                
-                csv_filename = csv_files[0]
-                print(f'    [INFO] Extracting {csv_filename}...')
-                
-                # Read CSV into DataFrame
-                with z.open(csv_filename) as csv_file:
-                    df = pd.read_csv(csv_file, encoding='latin-1', low_memory=False)
-                
-                # Add YEAR column
-                df['YEAR'] = year
-                
-                print(f'    [SUCCESS] Loaded {len(df):,} rows, {len(df.columns)} columns')
-                return df
-                
-        except requests.exceptions.RequestException as e:
-            print(f'    [ERROR] Failed to download: {e}')
+
+        if df is None:
             return None
-        except zipfile.BadZipFile as e:
-            print(f'    [ERROR] Invalid zip file: {e}')
-            return None
+
+        # Add YEAR column
+        df['YEAR'] = year
+
+        print(f'    [SUCCESS] Loaded {len(df):,} rows, {len(df.columns)} columns')
+        return df
+
+    print(f'    [ERROR] {table_name} not available on any IPEDS path: {last_error}')
+    return None
 
 
 def clean_column_name(col: str) -> str:
