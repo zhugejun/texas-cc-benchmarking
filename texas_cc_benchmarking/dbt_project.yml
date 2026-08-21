@@ -7,6 +7,11 @@ version: '1.0.0'
 # This setting configures which "profile" dbt uses for this project.
 profile: 'texas_cc_benchmarking'
 
+# Build the raw_ipeds views (DuckDB views over the CSVs in seeds/) before each run,
+# so the staging sources have something to read. See macros/create_raw_ipeds_views.sql.
+on-run-start:
+  - '{{ create_raw_ipeds_views() }}'
+
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
@@ -37,7 +42,11 @@ models:
     marts:
       +materialized: table
 
-# Seeds configuration - load IPEDS data
+# The CSVs in seeds/ are the raw IPEDS source data. They are NOT loaded as dbt
+# seeds — they are read as views by the create_raw_ipeds_views macro and exposed
+# through the raw_ipeds source. Disabling seeding keeps `dbt build` from trying to
+# load them twice.
 seeds:
   texas_cc_benchmarking:
+    +enabled: false
     +quote_columns: false
