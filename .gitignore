@@ -26,7 +26,11 @@ runs/
 
 # Generated report artifacts (rebuild with dashboard/build_html.py and scripts/export_marts.py)
 exports/
-dashboard/dist/
+dashboard/dist/*
+# ...except the standalone dashboard. It is committed on purpose so anyone can
+# download the single self-contained HTML file straight from the repo without
+# installing dbt, DuckDB, or Python. Rebuild it with dashboard/build_html.py.
+!dashboard/dist/texas_cc_dashboard.html
 
 # Snowflake
 *.snowflake
@@ -46,7 +50,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+/dist/
 downloads/
 eggs/
 .eggs/
