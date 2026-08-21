@@ -2,9 +2,11 @@ version: 2
 
 sources:
   - name: raw_ipeds
-    description: 'Raw IPEDS data loaded directly from CSV files'
-    schema: RAW_IPEDS
-    database: TEXAS_CC
+    description: 'Raw IPEDS data, exposed as DuckDB views over the CSV files in seeds/'
+    # The views are created at run start by the create_raw_ipeds_views macro
+    # (on-run-start hook in dbt_project.yml), reading each seeds/<table>.csv live.
+    database: texas_cc
+    schema: raw_ipeds
 
     tables:
 
