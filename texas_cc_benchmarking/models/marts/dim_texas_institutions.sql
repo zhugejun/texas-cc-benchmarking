@@ -10,7 +10,11 @@ peer_groups as (
 ),
 
 retention as (
+    -- int_retention_rates is year-grained; keep only the most recent year so the
+    -- join below stays one row per institution (dim grain). Mirrors the max(year)
+    -- pattern used in int_peer_groups.
     select * from {{ ref('int_retention_rates') }}
+    where year = (select max(year) from {{ ref('int_retention_rates') }})
 ),
 
 final as (
@@ -31,23 +35,23 @@ final as (
         i.locale_type,
 
         -- Peer group attributes
-        p.total_enrollment::number(10,0) as total_enrollment,
+        p.total_enrollment::numeric(10,0) as total_enrollment,
         p.size_tier,
         p.is_hsi,
         p.pell_tier,
         p.urbanicity,
 
         -- Demographics (cast percentages)
-        p.pct_hispanic::number(10,2) as pct_hispanic,
-        p.pct_black::number(10,2) as pct_black,
-        p.pct_white::number(10,2) as pct_white,
-        p.pct_pell::number(10,2) as pct_pell,
+        p.pct_hispanic::numeric(10,2) as pct_hispanic,
+        p.pct_black::numeric(10,2) as pct_black,
+        p.pct_white::numeric(10,2) as pct_white,
+        p.pct_pell::numeric(10,2) as pct_pell,
 
         -- Retention & efficiency metrics (cast rates)
-        r.full_time_retention_rate::number(10,2) as full_time_retention_rate,
-        r.part_time_retention_rate::number(10,2) as part_time_retention_rate,
-        r.overall_retention_rate::number(10,2) as overall_retention_rate,
-        r.student_faculty_ratio::number(10,2) as student_faculty_ratio
+        r.full_time_retention_rate::numeric(10,2) as full_time_retention_rate,
+        r.part_time_retention_rate::numeric(10,2) as part_time_retention_rate,
+        r.overall_retention_rate::numeric(10,2) as overall_retention_rate,
+        r.student_faculty_ratio::numeric(10,2) as student_faculty_ratio
 
     from institutions i
     left join peer_groups p on i.unitid = p.unitid
