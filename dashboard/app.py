@@ -1,6 +1,6 @@
 """
 Texas Community College Benchmarking Dashboard
-Multi-college comparison with fixed years (2020-2024)
+Multi-college comparison over the fixed year window below.
 """
 
 import streamlit as st
@@ -10,6 +10,19 @@ import plotly.graph_objects as go
 import duckdb
 from pathlib import Path
 import os
+
+# Years shown in the dashboard. IPEDS releases completions (C_A) about a year
+# ahead of graduation rates (GR) and retention (EF_D), so fct_student_outcomes
+# can hold a newer year than this app should display: showing it would leave the
+# graduation, retention, and equity tabs blank for that year. The window stops at
+# the newest year where every headline metric exists. Bump both ends once
+# GR<yyyy> and EF<yyyy>D are published and loaded, and keep them in step with the
+# same constants in dashboard/build_html.py.
+START_YEAR = 2020
+END_YEAR = 2024
+YEAR_RANGE = f"{START_YEAR}-{END_YEAR}"
+# Short label for the year-over-year delta column, e.g. "Change (2020-24)".
+CHANGE_LABEL = f"Change ({START_YEAR}-{str(END_YEAR)[-2:]})"
 
 # Page config
 st.set_page_config(
@@ -210,9 +223,12 @@ except Exception as e:
     st.error(f"Could not load data from DuckDB: {e}")
     st.stop()
 
+# Trim to the dashboard window before anything reads the frame, so a newer year
+# sitting in the warehouse cannot leak into the charts and tables.
+outcomes = outcomes[outcomes['YEAR'].between(START_YEAR, END_YEAR)]
+
 # Get available colleges
 available_colleges = sorted(outcomes['INSTITUTION_NAME'].unique().tolist())
-fixed_years = [2020, 2021, 2022, 2023, 2024]
 
 
 # ===================
@@ -222,7 +238,7 @@ st.sidebar.title("Texas CC Benchmarking")
 st.sidebar.markdown("---")
 
 # Fixed years display
-st.sidebar.info("Years: 2020-2024 (all years included)")
+st.sidebar.info(f"Years: {YEAR_RANGE} (all years included)")
 
 st.sidebar.markdown("---")
 
@@ -284,7 +300,7 @@ if st.sidebar.button("Refresh Data"):
     st.cache_data.clear()
     st.rerun()
 
-st.sidebar.caption("Data Source: IPEDS 2020-2024")
+st.sidebar.caption(f"Data Source: IPEDS {YEAR_RANGE}")
 
 # Validate selection
 if not selected_colleges:
@@ -299,7 +315,7 @@ filtered_data = outcomes[outcomes['INSTITUTION_NAME'].isin(selected_colleges)]
 # MAIN CONTENT
 # ===================
 st.title("Texas Community College Benchmarking")
-subtitle = f"**Comparing {len(selected_colleges)} colleges across years 2020-2024**"
+subtitle = f"**Comparing {len(selected_colleges)} colleges across years {YEAR_RANGE}**"
 if highlight_college:
     subtitle += f" &nbsp;|&nbsp; Highlighting **{highlight_college}**"
 st.markdown(subtitle)
@@ -317,7 +333,7 @@ with tab_overview:
     st.header("Overview - All Selected Colleges")
     
     # Latest year summary
-    latest_year = 2024
+    latest_year = END_YEAR
     latest_data = filtered_data[filtered_data['YEAR'] == latest_year]
     
     # Summary metrics
@@ -326,18 +342,18 @@ with tab_overview:
         st.metric("Colleges", len(selected_colleges))
     with col2:
         avg_grad = latest_data['GRADUATION_RATE_150'].mean()
-        st.metric("Avg Graduation Rate (2024)", f"{avg_grad:.1f}%" if pd.notna(avg_grad) else "N/A")
+        st.metric(f"Avg Graduation Rate ({END_YEAR})", f"{avg_grad:.1f}%" if pd.notna(avg_grad) else "N/A")
     with col3:
         avg_ret = latest_data['FULL_TIME_RETENTION_RATE'].mean()
-        st.metric("Avg Retention Rate (2024)", f"{avg_ret:.1f}%" if pd.notna(avg_ret) else "N/A")
+        st.metric(f"Avg Retention Rate ({END_YEAR})", f"{avg_ret:.1f}%" if pd.notna(avg_ret) else "N/A")
     with col4:
         total_deg = latest_data['ASSOCIATE_DEGREES'].sum()
-        st.metric("Total Degrees (2024)", f"{total_deg:,.0f}" if pd.notna(total_deg) else "N/A")
+        st.metric(f"Total Degrees ({END_YEAR})", f"{total_deg:,.0f}" if pd.notna(total_deg) else "N/A")
     
     st.divider()
     
     # Data table with all colleges and years
-    st.subheader("All Colleges Data (2024)")
+    st.subheader(f"All Colleges Data ({END_YEAR})")
     
     display_cols = ['INSTITUTION_NAME', 'GRADUATION_RATE_150', 'SUCCESS_RATE', 
                     'FULL_TIME_RETENTION_RATE', 'ASSOCIATE_DEGREES', 'TOTAL_COMPLETIONS']
@@ -350,7 +366,7 @@ with tab_overview:
                  width="stretch", hide_index=True)
     
     # Quick comparison bar chart
-    st.subheader("Graduation Rate Comparison (2024)")
+    st.subheader(f"Graduation Rate Comparison ({END_YEAR})")
     chart_data = latest_data[['INSTITUTION_NAME', 'GRADUATION_RATE_150']].dropna()
     chart_data = chart_data.sort_values('GRADUATION_RATE_150', ascending=True)
     
@@ -383,7 +399,7 @@ with tab_graduation:
     st.header("Graduation Rate Analysis")
     
     # Trend chart - all colleges
-    st.subheader("Graduation Rate Trend (2020-2024)")
+    st.subheader(f"Graduation Rate Trend ({YEAR_RANGE})")
     
     trend_data = filtered_data.sort_values(['INSTITUTION_NAME', 'YEAR'])
     
@@ -431,8 +447,9 @@ with tab_graduation:
         index='INSTITUTION_NAME', columns='YEAR', values='GRADUATION_RATE_150', aggfunc='first'
     ).round(1)
     pivot.columns = [str(int(c)) for c in pivot.columns]
-    if '2020' in pivot.columns and '2024' in pivot.columns:
-        pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(1)
+    first, last = str(START_YEAR), str(END_YEAR)
+    if first in pivot.columns and last in pivot.columns:
+        pivot[CHANGE_LABEL] = (pivot[last] - pivot[first]).round(1)
     st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
@@ -443,7 +460,7 @@ with tab_retention:
     st.header("Retention Rate Analysis")
     
     # Trend chart
-    st.subheader("Retention Rate Trend (2020-2024)")
+    st.subheader(f"Retention Rate Trend ({YEAR_RANGE})")
     
     trend_data = filtered_data.sort_values(['INSTITUTION_NAME', 'YEAR'])
     
@@ -491,8 +508,9 @@ with tab_retention:
         index='INSTITUTION_NAME', columns='YEAR', values='FULL_TIME_RETENTION_RATE', aggfunc='first'
     ).round(1)
     pivot.columns = [str(int(c)) for c in pivot.columns]
-    if '2020' in pivot.columns and '2024' in pivot.columns:
-        pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(1)
+    first, last = str(START_YEAR), str(END_YEAR)
+    if first in pivot.columns and last in pivot.columns:
+        pivot[CHANGE_LABEL] = (pivot[last] - pivot[first]).round(1)
     st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
@@ -503,7 +521,7 @@ with tab_completion:
     st.header("Completions Analysis")
     
     # Trend chart
-    st.subheader("Associate Degrees Trend (2020-2024)")
+    st.subheader(f"Associate Degrees Trend ({YEAR_RANGE})")
     
     trend_data = filtered_data.sort_values(['INSTITUTION_NAME', 'YEAR'])
     
@@ -575,8 +593,9 @@ with tab_completion:
         index='INSTITUTION_NAME', columns='YEAR', values='ASSOCIATE_DEGREES', aggfunc='first'
     ).round(0)
     pivot.columns = [str(int(c)) for c in pivot.columns]
-    if '2020' in pivot.columns and '2024' in pivot.columns:
-        pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(0)
+    first, last = str(START_YEAR), str(END_YEAR)
+    if first in pivot.columns and last in pivot.columns:
+        pivot[CHANGE_LABEL] = (pivot[last] - pivot[first]).round(0)
     st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
@@ -586,21 +605,21 @@ with tab_completion:
 with tab_equity:
     st.header("Equity Analysis")
     
-    latest_data = filtered_data[filtered_data['YEAR'] == 2024]
+    latest_data = filtered_data[filtered_data['YEAR'] == END_YEAR]
     
     # Summary metrics
     col1, col2 = st.columns(2)
     with col1:
         avg_gap_h = latest_data['EQUITY_GAP_HISPANIC'].mean()
         st.metric(
-            "Avg Hispanic Graduation Gap (2024)",
+            f"Avg Hispanic Graduation Gap ({END_YEAR})",
             f"{avg_gap_h:.1f}pp" if pd.notna(avg_gap_h) else "N/A",
             help="Difference from white student graduation rate"
         )
     with col2:
         avg_gap_b = latest_data['EQUITY_GAP_BLACK'].mean()
         st.metric(
-            "Avg Black Graduation Gap (2024)",
+            f"Avg Black Graduation Gap ({END_YEAR})",
             f"{avg_gap_b:.1f}pp" if pd.notna(avg_gap_b) else "N/A",
             help="Difference from white student graduation rate"
         )
@@ -608,7 +627,7 @@ with tab_equity:
     st.divider()
     
     # Graduation rates by demographic
-    st.subheader("Graduation Rate by Race/Ethnicity (2024)")
+    st.subheader(f"Graduation Rate by Race/Ethnicity ({END_YEAR})")
     
     demo_data = latest_data[['INSTITUTION_NAME', 'GRAD_RATE_HISPANIC', 'GRAD_RATE_BLACK', 'GRAD_RATE_WHITE']].melt(
         id_vars=['INSTITUTION_NAME'],
@@ -636,7 +655,7 @@ with tab_equity:
     st.plotly_chart(fig, width="stretch")
 
     # Equity gaps scatter
-    st.subheader("Equity Gaps by College (2024)")
+    st.subheader(f"Equity Gaps by College ({END_YEAR})")
     
     gap_data = latest_data[['INSTITUTION_NAME', 'EQUITY_GAP_HISPANIC', 'EQUITY_GAP_BLACK']].dropna()
     
@@ -667,7 +686,7 @@ with tab_equity:
         st.caption("Positive = white students have higher graduation rate. Zero = equity achieved.")
     
     # Data table
-    st.subheader("Equity Data Table (2024)")
+    st.subheader(f"Equity Data Table ({END_YEAR})")
     equity_display = latest_data[[
         'INSTITUTION_NAME', 'GRAD_RATE_HISPANIC', 'GRAD_RATE_BLACK', 'GRAD_RATE_WHITE',
         'EQUITY_GAP_HISPANIC', 'EQUITY_GAP_BLACK'
