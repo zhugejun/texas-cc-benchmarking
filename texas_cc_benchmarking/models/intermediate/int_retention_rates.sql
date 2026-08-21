@@ -29,17 +29,17 @@ final as (
         r.student_faculty_ratio,
 
         -- Cohort context (cast to larger integers)
-        r.total_entering_undergrads::number(10,0) as total_entering_undergrads,
-        r.ft_adjusted_cohort::number(10,0) as ft_adjusted_cohort,
-        r.pt_adjusted_cohort::number(10,0) as pt_adjusted_cohort,
-        (r.ft_adjusted_cohort + r.pt_adjusted_cohort)::number(10,0) as total_adjusted_cohort,
+        r.total_entering_undergrads::numeric(10,0) as total_entering_undergrads,
+        r.ft_adjusted_cohort::numeric(10,0) as ft_adjusted_cohort,
+        r.pt_adjusted_cohort::numeric(10,0) as pt_adjusted_cohort,
+        (r.ft_adjusted_cohort + r.pt_adjusted_cohort)::numeric(10,0) as total_adjusted_cohort,
 
         -- Students retained counts
-        r.ft_students_retained::number(10,0) as ft_students_retained,
-        r.pt_students_retained::number(10,0) as pt_students_retained,
+        r.ft_students_retained::numeric(10,0) as ft_students_retained,
+        r.pt_students_retained::numeric(10,0) as pt_students_retained,
 
         -- GRS cohort linkage (for joining with graduation rates)
-        r.grs_cohort_count::number(10,0) as grs_cohort_count,
+        r.grs_cohort_count::numeric(10,0) as grs_cohort_count,
         r.grs_cohort_pct_of_entering
 
     from retention r

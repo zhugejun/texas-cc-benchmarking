@@ -19,15 +19,15 @@ texas_cc_graduation as (
         g.unitid,
         g.year,  -- Include year for multi-year analysis
         g.cohort_type,
-        g.total::number(10,0) as total,
-        g.total_men::number(10,0) as total_men,
-        g.total_women::number(10,0) as total_women,
-        g.hispanic_total::number(10,0) as hispanic_total,
-        g.black_total::number(10,0) as black_total,
-        g.white_total::number(10,0) as white_total,
-        g.asian_total::number(10,0) as asian_total,
-        g.amer_indian_total::number(10,0) as amer_indian_total,
-        g.two_or_more_total::number(10,0) as two_or_more_total
+        g.total::numeric(10,0) as total,
+        g.total_men::numeric(10,0) as total_men,
+        g.total_women::numeric(10,0) as total_women,
+        g.hispanic_total::numeric(10,0) as hispanic_total,
+        g.black_total::numeric(10,0) as black_total,
+        g.white_total::numeric(10,0) as white_total,
+        g.asian_total::numeric(10,0) as asian_total,
+        g.amer_indian_total::numeric(10,0) as amer_indian_total,
+        g.two_or_more_total::numeric(10,0) as two_or_more_total
     from graduation_rates g
     inner join texas_ccs t on g.unitid = t.unitid
     where g.cohort_type in (2, 3, 4, 29, 30, 33)
