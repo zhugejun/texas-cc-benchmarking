@@ -24,6 +24,10 @@ runs/
 *.duckdb
 *.duckdb.wal
 
+# Generated report artifacts (rebuild with dashboard/build_html.py and scripts/export_marts.py)
+exports/
+dashboard/dist/
+
 # Snowflake
 *.snowflake
 

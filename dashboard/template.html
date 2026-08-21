@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Texas CC Benchmarking</title>
+<style>
+  :root {
+    --blue-900: #1e3a8a;
+    --blue-800: #1e40af;
+    --blue-700: #1d4ed8;
+    --blue-500: #3b82f6;
+    --muted: #cbd5e1;
+    --ink: #0f172a;
+    --ink-soft: #475569;
+    --line: #e2e8f0;
+    --bg: #ffffff;
+    --sidebar-w: 330px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Source Sans 3", "Source Sans Pro", -apple-system, BlinkMacSystemFont,
+                 "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ===== Layout ===== */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: var(--sidebar-w);
+    flex: 0 0 var(--sidebar-w);
+    background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 100%);
+    color: #fff;
+    padding: 24px 20px 32px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .main { flex: 1 1 auto; padding: 28px 36px 64px; min-width: 0; }
+
+  /* ===== Sidebar ===== */
+  .sidebar h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 4px; }
+  .sidebar h2 { font-size: 1rem; font-weight: 600; margin: 0 0 10px; }
+  .sidebar hr { border: none; border-top: 1px solid rgba(255,255,255,.25); margin: 18px 0; }
+  .sidebar .caption { font-size: .8rem; color: rgba(255,255,255,.75); }
+  .info-box {
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.30);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: .85rem;
+  }
+  .btn-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .sidebar button {
+    flex: 1; background: #fff; color: var(--blue-900); border: none;
+    border-radius: 8px; padding: 8px 10px; font-weight: 600; font-size: .85rem;
+    cursor: pointer; font-family: inherit;
+  }
+  .sidebar button:hover { background: #eff6ff; }
+  .sidebar input[type="text"], .sidebar select {
+    width: 100%; padding: 8px 10px; border-radius: 8px; border: none;
+    background: #fff; color: var(--blue-900); font-size: .9rem; font-family: inherit;
+  }
+  .sidebar input[type="text"]::placeholder { color: #94a3b8; }
+  .college-list {
+    height: 340px; overflow-y: auto; margin-top: 10px;
+    background: rgba(255,255,255,.10); border-radius: 8px; padding: 8px 10px;
+  }
+  .college-list label {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: .84rem; line-height: 1.35; padding: 4px 0; cursor: pointer;
+  }
+  .college-list input { margin-top: 2px; accent-color: #fff; flex: 0 0 auto; }
+  .college-list .empty { font-size: .84rem; color: rgba(255,255,255,.7); padding: 6px 0; }
+
+  /* ===== Main ===== */
+  .main h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 6px; }
+  .main h2 { font-size: 1.45rem; font-weight: 600; margin: 4px 0 14px; }
+  .main h3 { font-size: 1.1rem; font-weight: 600; margin: 26px 0 8px; }
+  .subtitle { color: var(--ink-soft); margin: 0 0 20px; }
+  .subtitle strong { color: var(--ink); }
+  .divider { border: none; border-top: 1px solid var(--line); margin: 24px 0; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 22px; flex-wrap: wrap; }
+  .tabs button {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    padding: 10px 14px; font-size: .95rem; font-weight: 500; color: var(--ink-soft);
+    cursor: pointer; font-family: inherit;
+  }
+  .tabs button:hover { color: var(--blue-700); }
+  .tabs button.active { color: var(--blue-700); border-bottom-color: var(--blue-700); font-weight: 600; }
+
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+  .metric {
+    background: rgba(30, 64, 175, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 10px; padding: 15px;
+  }
+  .metric .label { font-size: .8rem; color: var(--ink-soft); margin-bottom: 6px; }
+  .metric .value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; max-height: 520px; }
+  table { border-collapse: collapse; width: 100%; font-size: .875rem; }
+  thead th {
+    position: sticky; top: 0; background: #f8fafc; text-align: right;
+    font-weight: 600; padding: 9px 12px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  thead th:first-child { text-align: left; }
+  tbody td { padding: 7px 12px; text-align: right; border-bottom: 1px solid #f1f5f9; white-space: nowrap; }
+  tbody td:first-child { text-align: left; }
+  tbody tr.highlight td { background: rgba(29, 78, 216, 0.18); font-weight: 700; }
+  .note { font-size: .82rem; color: var(--ink-soft); margin-top: 8px; }
+  .chart { width: 100%; }
+  footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line);
+           font-size: .8rem; color: var(--ink-soft); }
+  .warn { padding: 14px 16px; background: #fef3c7; border: 1px solid #fcd34d;
+          border-radius: 8px; color: #78350f; }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <h1>Texas CC Benchmarking</h1>
+    <hr>
+    <div class="info-box">Years: 2020&ndash;2024 (all years included)</div>
+    <hr>
+    <h2>Select Colleges</h2>
+    <div class="btn-row">
+      <button id="select-all" type="button">Select All</button>
+      <button id="clear-all" type="button">Clear All</button>
+    </div>
+    <div class="caption" id="selected-count"></div>
+    <div style="margin-top:10px">
+      <input type="text" id="search" placeholder="Type to filter&hellip;" autocomplete="off">
+    </div>
+    <div class="college-list" id="college-list"></div>
+    <hr>
+    <h2>Highlight</h2>
+    <select id="highlight"></select>
+    <div class="caption" style="margin-top:6px">
+      The chosen college is drawn in blue; all others fade to gray.
+    </div>
+    <hr>
+    <div class="caption">Data Source: IPEDS 2020&ndash;2024</div>
+  </aside>
+
+  <main class="main">
+    <h1>Texas Community College Benchmarking</h1>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="tabs" id="tabs"></div>
+    <div id="panel"></div>
+    <footer>
+      Generated <span id="generated-at"></span> from <code>texas_cc.duckdb</code>
+      &middot; static file, no server required.
+    </footer>
+  </main>
+</div>
+
+<script>/*__PLOTLY_JS__*/</script>
+<script>
+const DATA = /*__DATA__*/;
+</script>
+<script>
+(function () {
+  "use strict";
+
+  const ROWS = DATA.rows;
+  const YEARS = DATA.years;
+  const LATEST = YEARS[YEARS.length - 1];
+  const FIRST = YEARS[0];
+  const COLLEGES = Array.from(new Set(ROWS.map(r => r.college))).sort();
+
+  const HIGHLIGHT_COLOR = "#1d4ed8";
+  const MUTED_COLOR = "#cbd5e1";
+  // Plotly's default qualitative cycle, for the per-college line traces.
+  const QUAL = ["#636efa", "#EF553B", "#00cc96", "#ab63fa", "#FFA15A", "#19d3f3",
+                "#FF6692", "#B6E880", "#FF97FF", "#FECB52"];
+  // Stand-ins for px.colors.sequential.Blues_r / Greens_r, dark to light.
+  const BLUES_R = ["#08306b", "#08519c", "#2171b5", "#4292c6", "#6baed6"];
+  const GREENS_R = ["#00441b", "#006d2c", "#238b45", "#41ab5d", "#74c476"];
+  // Sequential ramp for magnitude: light = low, dark = high.
+  // Do NOT use plotly.js's built-in "Blues" here -- it runs the other way
+  // (dark at 0, near-white at 1), which reads backwards. This is the
+  // ColorBrewer ramp that plotly express's sequential.Blues uses, with the
+  // near-white bottom stop trimmed so the smallest bar stays visible on white.
+  const BLUES_SEQ = [
+    [0.00, "rgb(198,219,239)"],
+    [0.25, "rgb(107,174,214)"],
+    [0.50, "rgb(66,146,198)"],
+    [0.75, "rgb(33,113,181)"],
+    [1.00, "rgb(8,48,107)"]
+  ];
+
+  const PLOT_CONFIG = { responsive: true, displaylogo: false };
+  const BASE_LAYOUT = {
+    font: { family: '"Source Sans 3", -apple-system, "Segoe UI", Roboto, sans-serif', size: 12 },
+    paper_bgcolor: "#fff",
+    plot_bgcolor: "#fff",
+    margin: { l: 60, r: 20, t: 30, b: 60 },
+    hovermode: "closest"
+  };
+
+  const state = {
+    selected: new Set(COLLEGES),
+    highlight: null,
+    search: "",
+    tab: "overview"
+  };
+
+  // ===================
+  // HELPERS
+  // ===================
+  const $ = id => document.getElementById(id);
+
+  function selectedColleges() {
+    return COLLEGES.filter(c => state.selected.has(c));
+  }
+
+  function filteredRows() {
+    return ROWS.filter(r => state.selected.has(r.college));
+  }
+
+  function rowsFor(college) {
+    return ROWS.filter(r => r.college === college).sort((a, b) => a.year - b.year);
+  }
+
+  function num(v) {
+    return (v === null || v === undefined || Number.isNaN(v)) ? null : v;
+  }
+
+  function fmt(v, decimals, suffix) {
+    if (num(v) === null) return "N/A";
+    return v.toFixed(decimals) + (suffix || "");
+  }
+
+  function fmtInt(v) {
+    if (num(v) === null) return "N/A";
+    return Math.round(v).toLocaleString("en-US");
+  }
+
+  function mean(values) {
+    const clean = values.filter(v => num(v) !== null);
+    if (!clean.length) return null;
+    return clean.reduce((a, b) => a + b, 0) / clean.length;
+  }
+
+  function sum(values) {
+    const clean = values.filter(v => num(v) !== null);
+    if (!clean.length) return null;
+    return clean.reduce((a, b) => a + b, 0);
+  }
+
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  // ===================
+  // HIGHLIGHT HELPERS
+  // ===================
+
+  /** Color the highlighted college's line blue and gray out the rest. */
+  function highlightLines(traces) {
+    if (!state.highlight) return traces;
+    traces.forEach(t => {
+      if (t.name === state.highlight) {
+        t.line = { color: HIGHLIGHT_COLOR, width: 4 };
+        t.marker = { color: HIGHLIGHT_COLOR, size: 9 };
+        t.opacity = 1.0;
+        t.showlegend = true;
+      } else {
+        t.line = { color: MUTED_COLOR, width: 1.5 };
+        t.marker = { color: MUTED_COLOR, size: 4 };
+        t.opacity = 0.55;
+        t.showlegend = false;
+      }
+    });
+    // Draw the highlighted trace last so it sits on top of the gray ones.
+    traces.sort((a, b) => (a.name === state.highlight ? 1 : 0) - (b.name === state.highlight ? 1 : 0));
+    return traces;
+  }
+
+  /** Fade every bar that does not belong to the highlighted college. */
+  function highlightBars(traces) {
+    if (!state.highlight) return traces;
+    traces.forEach(t => {
+      if (!t.x) return;
+      t.marker = Object.assign({}, t.marker, {
+        opacity: t.x.map(c => (c === state.highlight ? 1.0 : 0.25))
+      });
+    });
+    return traces;
+  }
+
+  // ===================
+  // CHART BUILDERS
+  // ===================
+
+  function lineTrend(divId, field, yLabel) {
+    const sel = selectedColleges();
+    const traces = sel.map((college, i) => {
+      const rows = rowsFor(college);
+      const color = QUAL[i % QUAL.length];
+      return {
+        type: "scatter", mode: "lines+markers", name: college,
+        x: rows.map(r => r.year),
+        y: rows.map(r => num(r[field])),
+        line: { color: color, width: 2 },
+        marker: { color: color, size: 6 },
+        hovertemplate: "<b>" + college + "</b><br>%{x}: %{y}<extra></extra>"
+      };
+    });
+    highlightLines(traces);
+    Plotly.react(divId, traces, Object.assign({}, BASE_LAYOUT, {
+      height: 500,
+      showlegend: sel.length <= 10 || Boolean(state.highlight),
+      xaxis: { title: "Year", dtick: 1 },
+      yaxis: { title: yLabel, rangemode: "tozero" }
+    }), PLOT_CONFIG);
+  }
+
+  function yearBars(divId, field, yLabel, palette) {
+    const sel = selectedColleges();
+    const traces = YEARS.map((year, i) => ({
+      type: "bar", name: String(year),
+      x: sel,
+      y: sel.map(c => {
+        const row = ROWS.find(r => r.college === c && r.year === year);
+        return row ? num(row[field]) : null;
+      }),
+      marker: { color: palette[i % palette.length] }
+    }));
+    highlightBars(traces);
+    Plotly.react(divId, traces, Object.assign({}, BASE_LAYOUT, {
+      height: 450,
+      barmode: "group",
+      margin: { l: 60, r: 20, t: 30, b: 160 },
+      legend: { title: { text: "Year" } },
+      xaxis: { tickangle: -45, automargin: true },
+      yaxis: { title: yLabel, rangemode: "tozero" }
+    }), PLOT_CONFIG);
+  }
+
+  // ===================
+  // TABLE BUILDERS
+  // ===================
+
+  function renderTable(headers, rows, highlightIndex) {
+    const thead = "<thead><tr>" + headers.map(h => "<th>" + esc(h) + "</th>").join("") + "</tr></thead>";
+    const tbody = "<tbody>" + rows.map(cells => {
+      const isHi = state.highlight && cells[highlightIndex === undefined ? 0 : highlightIndex] === state.highlight;
+      return "<tr" + (isHi ? ' class="highlight"' : "") + ">" +
+        cells.map(c => "<td>" + esc(c) + "</td>").join("") + "</tr>";
+    }).join("") + "</tbody>";
+    return '<div class="table-wrap"><table>' + thead + tbody + "</table></div>";
+  }
+
+  /** College x Year pivot with a first-to-last change column, mirroring the Streamlit tables. */
+  function pivotTable(field, decimals) {
+    const sel = selectedColleges();
+    const headers = ["College"].concat(YEARS.map(String)).concat(["Change (" + FIRST + "-" + String(LATEST).slice(-2) + ")"]);
+    const rows = sel.map(college => {
+      const byYear = {};
+      rowsFor(college).forEach(r => { byYear[r.year] = num(r[field]); });
+      const cells = [college].concat(YEARS.map(y => byYear[y] === null || byYear[y] === undefined ? "N/A" : byYear[y].toFixed(decimals)));
+      const first = byYear[FIRST], last = byYear[LATEST];
+      const change = (num(first) === null || num(last) === null) ? null : last - first;
+      cells.push(change === null ? "N/A" : (change > 0 ? "+" : "") + change.toFixed(decimals));
+      return cells;
+    });
+    return renderTable(headers, rows, 0);
+  }
+
+  function metricCard(label, value) {
+    return '<div class="metric"><div class="label">' + esc(label) +
+           '</div><div class="value">' + esc(value) + "</div></div>";
+  }
+
+  // ===================
+  // TABS
+  // ===================
+
+  const TABS = [
+    { id: "overview",   label: "Overview",        render: renderOverview },
+    { id: "graduation", label: "Graduation Rate", render: renderGraduation },
+    { id: "retention",  label: "Retention Rate",  render: renderRetention },
+    { id: "completion", label: "Completions",     render: renderCompletions },
+    { id: "equity",     label: "Equity",          render: renderEquity }
+  ];
+
+  function latestRows() {
+    return filteredRows().filter(r => r.year === LATEST);
+  }
+
+  function renderOverview() {
+    const latest = latestRows();
+    const sel = selectedColleges();
+
+    let html = "<h2>Overview &ndash; All Selected Colleges</h2>";
+    html += '<div class="metrics">' +
+      metricCard("Colleges", String(sel.length)) +
+      metricCard("Avg Graduation Rate (" + LATEST + ")", fmt(mean(latest.map(r => r.grad_rate)), 1, "%")) +
+      metricCard("Avg Retention Rate (" + LATEST + ")", fmt(mean(latest.map(r => r.retention)), 1, "%")) +
+      metricCard("Total Degrees (" + LATEST + ")", fmtInt(sum(latest.map(r => r.assoc_degrees)))) +
+      "</div>";
+    html += '<hr class="divider">';
+
+    html += "<h3>All Colleges Data (" + LATEST + ")</h3>";
+    const sorted = latest.slice().sort((a, b) => (num(b.grad_rate) ?? -Infinity) - (num(a.grad_rate) ?? -Infinity));
+    html += renderTable(
+      ["College", "Graduation Rate", "Success Rate", "Retention Rate", "Associate Degrees", "Total Completions"],
+      sorted.map(r => [r.college, fmt(r.grad_rate, 1), fmt(r.success_rate, 1),
+                       fmt(r.retention, 1), fmtInt(r.assoc_degrees), fmtInt(r.total_completions)]),
+      0
+    );
+
+    html += "<h3>Graduation Rate Comparison (" + LATEST + ")</h3>";
+    html += '<div class="chart" id="chart-overview-bar"></div>';
+    $("panel").innerHTML = html;
+
+    // Horizontal bar, ascending so the best performer sits at the top.
+    const barData = latest.filter(r => num(r.grad_rate) !== null)
+                          .sort((a, b) => a.grad_rate - b.grad_rate);
+    const colors = state.highlight
+      ? barData.map(r => (r.college === state.highlight ? HIGHLIGHT_COLOR : MUTED_COLOR))
+      : barData.map(r => r.grad_rate);
+    const trace = {
+      type: "bar", orientation: "h",
+      x: barData.map(r => r.grad_rate),
+      y: barData.map(r => r.college),
+      marker: state.highlight
+        ? { color: colors }
+        : { color: colors, colorscale: BLUES_SEQ, showscale: false },
+      hovertemplate: "%{y}<br>%{x:.1f}%<extra></extra>"
+    };
+    Plotly.react("chart-overview-bar", [trace], Object.assign({}, BASE_LAYOUT, {
+      height: Math.max(400, barData.length * 20),
+      showlegend: false,
+      margin: { l: 260, r: 20, t: 30, b: 50 },
+      xaxis: { title: "Graduation Rate (%)", rangemode: "tozero" },
+      yaxis: { automargin: true }
+    }), PLOT_CONFIG);
+  }
+
+  function metricTrendTab(title, field, yLabel, decimals, palette, unit) {
+    let html = "<h2>" + esc(title) + " Analysis</h2>";
+    html += "<h3>" + esc(title) + " Trend (" + FIRST + "&ndash;" + LATEST + ")</h3>";
+    html += '<div class="chart" id="chart-trend"></div>';
+    html += "<h3>By Year Comparison</h3>";
+    html += '<div class="chart" id="chart-bars"></div>';
+    html += "<h3>Data Table</h3>";
+    html += pivotTable(field, decimals);
+    $("panel").innerHTML = html;
+    lineTrend("chart-trend", field, yLabel);
+    yearBars("chart-bars", field, unit, palette);
+  }
+
+  function renderGraduation() {
+    metricTrendTab("Graduation Rate", "grad_rate", "Graduation Rate (%)", 1, BLUES_R, "Graduation Rate (%)");
+  }
+
+  function renderRetention() {
+    metricTrendTab("Retention Rate", "retention", "Retention Rate (%)", 1, BLUES_R, "Retention Rate (%)");
+  }
+
+  function renderCompletions() {
+    let html = "<h2>Completions Analysis</h2>";
+    html += "<h3>Associate Degrees Trend (" + FIRST + "&ndash;" + LATEST + ")</h3>";
+    html += '<div class="chart" id="chart-assoc"></div>';
+    html += "<h3>By Year Comparison</h3>";
+    html += '<div class="chart" id="chart-assoc-bars"></div>';
+    html += "<h3>Total Completions Trend</h3>";
+    html += '<div class="chart" id="chart-total"></div>';
+    html += "<h3>Data Table &ndash; Associate Degrees</h3>";
+    html += pivotTable("assoc_degrees", 0);
+    $("panel").innerHTML = html;
+    lineTrend("chart-assoc", "assoc_degrees", "Degrees Awarded");
+    yearBars("chart-assoc-bars", "assoc_degrees", "Degrees", GREENS_R);
+    lineTrend("chart-total", "total_completions", "Total Completions");
+  }
+
+  function renderEquity() {
+    const latest = latestRows();
+
+    let html = "<h2>Equity Analysis</h2>";
+    html += '<div class="metrics">' +
+      metricCard("Avg Hispanic Graduation Gap (" + LATEST + ")", fmt(mean(latest.map(r => r.gap_hispanic)), 1, "pp")) +
+      metricCard("Avg Black Graduation Gap (" + LATEST + ")", fmt(mean(latest.map(r => r.gap_black)), 1, "pp")) +
+      "</div>";
+    html += '<p class="note">Gap = difference from the white student graduation rate.</p>';
+    html += '<hr class="divider">';
+
+    html += "<h3>Graduation Rate by Race/Ethnicity (" + LATEST + ")</h3>";
+    html += '<div class="chart" id="chart-demo"></div>';
+    html += "<h3>Equity Gaps by College (" + LATEST + ")</h3>";
+    html += '<div class="chart" id="chart-gaps"></div>';
+    html += '<p class="note">Positive = white students have a higher graduation rate. Zero = equity achieved.</p>';
+    html += "<h3>Equity Data Table (" + LATEST + ")</h3>";
+    html += renderTable(
+      ["College", "Hispanic Rate", "Black Rate", "White Rate", "Hispanic Gap", "Black Gap"],
+      latest.map(r => [r.college, fmt(r.grad_hispanic, 1), fmt(r.grad_black, 1), fmt(r.grad_white, 1),
+                       fmt(r.gap_hispanic, 1), fmt(r.gap_black, 1)]),
+      0
+    );
+    $("panel").innerHTML = html;
+
+    const sel = selectedColleges();
+    const demos = [
+      { key: "grad_hispanic", name: "Hispanic", color: "#3b82f6" },
+      { key: "grad_black", name: "Black", color: "#1e40af" },
+      { key: "grad_white", name: "White", color: "#94a3b8" }
+    ];
+    const demoTraces = demos.map(d => ({
+      type: "bar", name: d.name,
+      x: sel,
+      y: sel.map(c => {
+        const row = latest.find(r => r.college === c);
+        return row ? num(row[d.key]) : null;
+      }),
+      marker: { color: d.color }
+    }));
+    highlightBars(demoTraces);
+    Plotly.react("chart-demo", demoTraces, Object.assign({}, BASE_LAYOUT, {
+      height: 450, barmode: "group",
+      margin: { l: 60, r: 20, t: 30, b: 160 },
+      legend: { title: { text: "Demographic" } },
+      xaxis: { tickangle: -45, automargin: true },
+      yaxis: { title: "Graduation Rate", rangemode: "tozero" }
+    }), PLOT_CONFIG);
+
+    const gapRows = latest.filter(r => num(r.gap_hispanic) !== null && num(r.gap_black) !== null);
+    const gapTrace = {
+      type: "scatter", mode: "markers",
+      x: gapRows.map(r => r.gap_hispanic),
+      y: gapRows.map(r => r.gap_black),
+      text: gapRows.map(r => r.college),
+      hovertemplate: "<b>%{text}</b><br>Hispanic gap: %{x:.1f}pp<br>Black gap: %{y:.1f}pp<extra></extra>",
+      marker: state.highlight
+        ? {
+            color: gapRows.map(r => (r.college === state.highlight ? HIGHLIGHT_COLOR : MUTED_COLOR)),
+            size: gapRows.map(r => (r.college === state.highlight ? 14 : 7))
+          }
+        : { color: "#3b82f6", size: 8 }
+    };
+    Plotly.react("chart-gaps", [gapTrace], Object.assign({}, BASE_LAYOUT, {
+      height: 450,
+      xaxis: { title: "Hispanic Gap (pp)", zeroline: false },
+      yaxis: { title: "Black Gap (pp)", zeroline: false },
+      shapes: [
+        { type: "line", xref: "paper", x0: 0, x1: 1, y0: 0, y1: 0, line: { dash: "dash", color: "gray", width: 1 } },
+        { type: "line", yref: "paper", y0: 0, y1: 1, x0: 0, x1: 0, line: { dash: "dash", color: "gray", width: 1 } }
+      ]
+    }), PLOT_CONFIG);
+  }
+
+  // ===================
+  // SIDEBAR RENDERING
+  // ===================
+
+  function renderCollegeList() {
+    const term = state.search.toLowerCase();
+    const visible = term ? COLLEGES.filter(c => c.toLowerCase().includes(term)) : COLLEGES;
+    const list = $("college-list");
+    if (!visible.length) {
+      list.innerHTML = '<div class="empty">No colleges match that search.</div>';
+      return;
+    }
+    list.innerHTML = visible.map(c =>
+      '<label><input type="checkbox" data-college="' + esc(c) + '"' +
+      (state.selected.has(c) ? " checked" : "") + "><span>" + esc(c) + "</span></label>"
+    ).join("");
+  }
+
+  function renderHighlightSelect() {
+    const sel = selectedColleges();
+    // A highlight only makes sense while that college is still selected.
+    if (state.highlight && !state.selected.has(state.highlight)) state.highlight = null;
+    $("highlight").innerHTML = ["None"].concat(sel).map(c =>
+      '<option value="' + esc(c) + '"' +
+      ((c === "None" && !state.highlight) || c === state.highlight ? " selected" : "") +
+      ">" + esc(c) + "</option>"
+    ).join("");
+  }
+
+  function renderChrome() {
+    const sel = selectedColleges();
+    $("selected-count").textContent = sel.length + " of " + COLLEGES.length + " selected";
+    let subtitle = "<strong>Comparing " + sel.length + " colleges across years " +
+                   FIRST + "&ndash;" + LATEST + "</strong>";
+    if (state.highlight) subtitle += " &nbsp;|&nbsp; Highlighting <strong>" + esc(state.highlight) + "</strong>";
+    $("subtitle").innerHTML = subtitle;
+  }
+
+  function renderTabs() {
+    $("tabs").innerHTML = TABS.map(t =>
+      '<button type="button" data-tab="' + t.id + '"' +
+      (t.id === state.tab ? ' class="active"' : "") + ">" + esc(t.label) + "</button>"
+    ).join("");
+  }
+
+  function renderPanel() {
+    if (!state.selected.size) {
+      $("panel").innerHTML = '<div class="warn">Please select at least one college from the sidebar.</div>';
+      return;
+    }
+    TABS.find(t => t.id === state.tab).render();
+  }
+
+  function render() {
+    renderChrome();
+    renderHighlightSelect();
+    renderTabs();
+    renderPanel();
+  }
+
+  // ===================
+  // EVENTS
+  // ===================
+
+  $("college-list").addEventListener("change", e => {
+    const college = e.target.dataset.college;
+    if (!college) return;
+    if (e.target.checked) state.selected.add(college); else state.selected.delete(college);
+    render();
+  });
+
+  $("search").addEventListener("input", e => {
+    state.search = e.target.value;
+    renderCollegeList();
+  });
+
+  $("select-all").addEventListener("click", () => {
+    COLLEGES.forEach(c => state.selected.add(c));
+    renderCollegeList();
+    render();
+  });
+
+  $("clear-all").addEventListener("click", () => {
+    state.selected.clear();
+    state.highlight = null;
+    renderCollegeList();
+    render();
+  });
+
+  $("highlight").addEventListener("change", e => {
+    state.highlight = e.target.value === "None" ? null : e.target.value;
+    render();
+  });
+
+  $("tabs").addEventListener("click", e => {
+    const tab = e.target.dataset.tab;
+    if (!tab || tab === state.tab) return;
+    state.tab = tab;
+    renderTabs();
+    renderPanel();
+  });
+
+  // ===================
+  // INIT
+  // ===================
+  $("generated-at").textContent = DATA.generated_at;
+  renderCollegeList();
+  render();
+})();
+</script>
+</body>
+</html>
