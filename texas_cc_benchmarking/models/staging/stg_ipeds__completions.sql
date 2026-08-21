@@ -9,6 +9,7 @@ with source as (
             source('raw_ipeds', 'c_a_2022'),
             source('raw_ipeds', 'c_a_2023'),
             source('raw_ipeds', 'c_a_2024'),
+            source('raw_ipeds', 'c_a_2025'),
         ]
     ) }}
 ),

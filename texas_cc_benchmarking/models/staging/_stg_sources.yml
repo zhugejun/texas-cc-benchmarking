@@ -62,11 +62,15 @@ sources:
       - name: c_a_2024
         description: 'Completions by Award Level and CIP code (2024 data)'
         columns: *c_a_columns
+
+      - name: c_a_2025
+        description: 'Completions by Award Level and CIP code (2025 data)'
+        columns: *c_a_columns
       
 
       # institutional characteristics
-      - name: hd_2024
-        description: 'Institutional Characteristics (Directory Information) 2024'
+      - name: hd_2025
+        description: 'Institutional Characteristics (Directory Information) 2025'
         columns: &hd_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
@@ -112,6 +116,10 @@ sources:
           - name: APPLURL
             description: 'Online application URL'
       
+      - name: hd_2024
+        description: 'Institutional Characteristics 2024'
+        columns: *hd_columns
+
       - name: hd_2023
         description: 'Institutional Characteristics 2023'
         columns: *hd_columns
@@ -129,8 +137,8 @@ sources:
         columns: *hd_columns
 
       # enrollment
-      - name: effy_2024
-        description: '12-Month Enrollment (unduplicated headcount) 2024'
+      - name: effy_2025
+        description: '12-Month Enrollment (unduplicated headcount) 2025'
         columns: &effy_columns
           - name: UNITID
             description: 'Unique identification number of the institution'
@@ -161,6 +169,10 @@ sources:
           - name: EFYNRALT
             description: 'Enrollment - Nonresident alien'
 
+
+      - name: effy_2024
+        description: '12-Month Enrollment (unduplicated headcount) 2024'
+        columns: *effy_columns
 
       - name: effy_2023
         description: '12-Month Enrollment (unduplicated headcount) 2023'
