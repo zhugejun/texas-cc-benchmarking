@@ -7,10 +7,9 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from sqlalchemy import create_engine
+import duckdb
 from pathlib import Path
-import yaml
-from urllib.parse import quote_plus
+import os
 
 # Page config
 st.set_page_config(
@@ -30,65 +29,105 @@ st.markdown("""
         border-radius: 10px;
         border: 1px solid rgba(59, 130, 246, 0.3);
     }
+    /* ===== Sidebar ===== */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e40af 0%, #3b82f6 100%);
+        background: linear-gradient(180deg, #1e3a8a 0%, #2563eb 100%);
     }
-    [data-testid="stSidebar"] .stMarkdown { color: white; }
+    /* Make every text element legible on the blue gradient */
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3,
+    [data-testid="stSidebar"] h4,
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] label,
+    [data-testid="stSidebar"] .stMarkdown,
+    [data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+        color: #ffffff !important;
+    }
+    [data-testid="stSidebar"] h1 { font-weight: 700; letter-spacing: -0.01em; }
+    /* Captions softer than body text */
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {
+        color: rgba(255, 255, 255, 0.75) !important;
+    }
+
+    /* Info box: translucent card instead of the low-contrast default */
+    [data-testid="stSidebar"] [data-testid="stAlert"],
+    [data-testid="stSidebar"] [data-testid="stNotification"] {
+        background-color: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.30);
+        border-radius: 10px;
+    }
+    [data-testid="stSidebar"] [data-testid="stAlert"] *,
+    [data-testid="stSidebar"] [data-testid="stNotification"] * {
+        color: #ffffff !important;
+    }
+
+    /* Buttons: solid white pills with dark-blue text */
+    [data-testid="stSidebar"] .stButton > button {
+        background-color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    [data-testid="stSidebar"] .stButton > button,
+    [data-testid="stSidebar"] .stButton > button p {
+        color: #1e3a8a !important;
+    }
+    [data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #eff6ff;
+    }
+
+    /* Search field: white input with dark text */
+    [data-testid="stSidebar"] [data-testid="stTextInput"] input {
+        color: #1e3a8a !important;
+        background-color: #ffffff;
+    }
+    [data-testid="stSidebar"] [data-testid="stTextInput"] input::placeholder {
+        color: #94a3b8 !important;
+    }
+
+    /* Checkbox list container + dividers */
     [data-testid="stSidebar"] .stExpander {
-        background-color: rgba(255,255,255,0.1);
+        background-color: rgba(255, 255, 255, 0.10);
         border-radius: 8px;
         margin-bottom: 10px;
     }
+    [data-testid="stSidebar"] hr { border-color: rgba(255, 255, 255, 0.25); }
     </style>
     """, unsafe_allow_html=True)
 
 
-# Snowflake connection
+# Local DuckDB connection
+def _duckdb_path() -> Path:
+    """Locate the DuckDB file produced by `dbt build`.
+
+    Override with the DUCKDB_PATH env var (e.g. for a deployed copy);
+    otherwise default to the file in the dbt project directory.
+    """
+    env_path = os.environ.get("DUCKDB_PATH")
+    if env_path:
+        return Path(env_path)
+    repo_root = Path(__file__).resolve().parent.parent
+    return repo_root / "texas_cc_benchmarking" / "texas_cc.duckdb"
+
+
 @st.cache_resource
-def get_engine():
-    # Try Streamlit Cloud secrets first, fall back to local profiles.yml
-    use_secrets = False
-    try:
-        use_secrets = "SNOWFLAKE_ACCOUNT" in st.secrets
-    except FileNotFoundError:
-        pass
-
-    if use_secrets:
-        # Streamlit Cloud deployment
-        account = st.secrets["SNOWFLAKE_ACCOUNT"]
-        user = st.secrets["SNOWFLAKE_USER"]
-        password = st.secrets["SNOWFLAKE_PASSWORD"]
-        database = st.secrets.get("SNOWFLAKE_DATABASE", "TEXAS_CC")
-        schema = st.secrets.get("SNOWFLAKE_SCHEMA", "DBT_GEJUN")
-        warehouse = st.secrets.get("SNOWFLAKE_WAREHOUSE", "COMPUTE_WH")
-        role = st.secrets.get("SNOWFLAKE_ROLE", None)
-    else:
-        # Local development - read from dbt profiles
-        profiles_path = Path.home() / '.dbt' / 'profiles.yml'
-        with open(profiles_path) as f:
-            profiles = yaml.safe_load(f)
-        profile = profiles['texas_cc_benchmarking']['outputs']['dev']
-        account = profile['account']
-        user = profile['user']
-        password = profile['password']
-        database = profile.get('database', 'TEXAS_CC')
-        schema = profile.get('schema', 'DBT_GEJUN')
-        warehouse = profile.get('warehouse', 'COMPUTE_WH')
-        role = profile.get('role')
-
-    connection_string = (
-        f"snowflake://{user}:{quote_plus(password)}@{account}/"
-        f"{database}/{schema}?warehouse={warehouse}"
-    )
-    if role:
-        connection_string += f"&role={role}"
-    return create_engine(connection_string)
+def get_connection():
+    db_path = _duckdb_path()
+    if not db_path.exists():
+        raise FileNotFoundError(
+            f"DuckDB database not found at {db_path}. "
+            "Run `dbt build` from the texas_cc_benchmarking/ directory first."
+        )
+    # read_only lets the dashboard run while dbt (or another reader) is open.
+    return duckdb.connect(str(db_path), read_only=True)
 
 
 @st.cache_data(ttl=600)
 def load_data(query: str) -> pd.DataFrame:
-    engine = get_engine()
-    df = pd.read_sql(query, engine)
+    con = get_connection()
+    df = con.execute(query).df()
     df.columns = df.columns.str.upper()
     return df
 
@@ -109,7 +148,7 @@ try:
     institutions = load_institutions()
     data_loaded = True
 except Exception as e:
-    st.error(f"Could not connect to Snowflake: {e}")
+    st.error(f"Could not load data from DuckDB: {e}")
     st.stop()
 
 # Get available colleges
