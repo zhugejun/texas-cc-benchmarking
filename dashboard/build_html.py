@@ -29,6 +29,15 @@ import duckdb
 import pandas as pd
 import plotly
 
+# Years shown in the dashboard. IPEDS releases completions (C_A) about a year
+# ahead of graduation rates (GR) and retention (EF_D), so the warehouse can hold
+# a newer year than the dashboard should display: showing it would leave the
+# graduation, retention, and equity tabs blank for that year. The window stops at
+# the newest year where every headline metric exists. Bump both ends once
+# GR<yyyy> and EF<yyyy>D are published and loaded.
+START_YEAR = 2020
+END_YEAR = 2024
+
 # SQL column -> the short key used in the embedded JSON. Only the fields the
 # dashboard actually charts are shipped, which keeps the payload small.
 COLUMNS = {
@@ -76,7 +85,10 @@ def load_rows(db_path: Path) -> list[dict]:
     con = duckdb.connect(str(db_path), read_only=True)
     select = ", ".join(f'"{c}"' for c in COLUMNS)
     df = con.execute(
-        f"SELECT {select} FROM fct_student_outcomes ORDER BY \"YEAR\", institution_name"
+        f"SELECT {select} FROM fct_student_outcomes "
+        'WHERE "YEAR" BETWEEN ? AND ? '
+        'ORDER BY "YEAR", institution_name',
+        [START_YEAR, END_YEAR],
     ).df()
     con.close()
 
@@ -111,7 +123,8 @@ def build(db_path: Path, out_path: Path, use_cdn: bool) -> None:
     rows = load_rows(db_path)
     if not rows:
         raise SystemExit(
-            f"fct_student_outcomes in {db_path} is empty. Run `uv run dbt build` first."
+            f"fct_student_outcomes in {db_path} has no rows for "
+            f"{START_YEAR}-{END_YEAR}. Run `uv run dbt build` first."
         )
 
     years = sorted({r["year"] for r in rows})

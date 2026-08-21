@@ -126,7 +126,7 @@
   <aside class="sidebar">
     <h1>Texas CC Benchmarking</h1>
     <hr>
-    <div class="info-box">Years: 2020&ndash;2024 (all years included)</div>
+    <div class="info-box" id="year-range"></div>
     <hr>
     <h2>Select Colleges</h2>
     <div class="btn-row">
@@ -145,7 +145,7 @@
       The chosen college is drawn in blue; all others fade to gray.
     </div>
     <hr>
-    <div class="caption">Data Source: IPEDS 2020&ndash;2024</div>
+    <div class="caption" id="data-source"></div>
   </aside>
 
   <main class="main">
@@ -663,6 +663,11 @@ const DATA = /*__DATA__*/;
   // ===================
   // INIT
   // ===================
+  // Year labels come from the data, not the markup, so the page cannot claim a
+  // range the embedded rows do not cover.
+  const YEAR_RANGE = FIRST + "\u2013" + LATEST;
+  $("year-range").textContent = "Years: " + YEAR_RANGE + " (all years included)";
+  $("data-source").textContent = "Data Source: IPEDS " + YEAR_RANGE;
   $("generated-at").textContent = DATA.generated_at;
   renderCollegeList();
   render();
