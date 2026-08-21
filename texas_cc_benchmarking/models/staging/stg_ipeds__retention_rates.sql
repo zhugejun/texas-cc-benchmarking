@@ -26,18 +26,18 @@ renamed as (
         stufacr as student_faculty_ratio,
 
         -- Entering class context (cast to handle large enrollments)
-        ugentern::number(10,0) as total_entering_undergrads,
+        ugentern::numeric(10,0) as total_entering_undergrads,
 
         -- Full-time cohort details
-        rrftcta::number(10,0) as ft_adjusted_cohort,
-        ret_nmf::number(10,0) as ft_students_retained,
+        rrftcta::numeric(10,0) as ft_adjusted_cohort,
+        ret_nmf::numeric(10,0) as ft_students_retained,
 
         -- Part-time cohort details
-        rrptcta::number(10,0) as pt_adjusted_cohort,
-        ret_nmp::number(10,0) as pt_students_retained,
+        rrptcta::numeric(10,0) as pt_adjusted_cohort,
+        ret_nmp::numeric(10,0) as pt_students_retained,
 
         -- GRS cohort info (for linking to graduation rates)
-        grcohrt::number(10,0) as grs_cohort_count,
+        grcohrt::numeric(10,0) as grs_cohort_count,
         pgrcohrt as grs_cohort_pct_of_entering
 
     from source
