@@ -9,10 +9,10 @@ Everything runs **locally against [DuckDB](https://duckdb.org/)** — no cloud d
 ```txt
 texas_cc_benchmarking/
 ├── models/
-│   ├── staging/          # Clean raw IPEDS data (2020-2024)
+│   ├── staging/          # Clean raw IPEDS data (2020-2025)
 │   ├── intermediate/     # Business logic and transformations (Multi-year)
 │   └── marts/            # Analytics-ready tables (Multi-year)
-├── seeds/                # Raw IPEDS CSVs (2020-2024), read as views by DuckDB
+├── seeds/                # Raw IPEDS CSVs (2020-2025), read as views by DuckDB
 ├── macros/               # create_raw_ipeds_views: exposes the CSVs as the raw_ipeds source
 └── profiles.yml          # Local DuckDB connection (no secrets)
 dashboard/
@@ -29,7 +29,7 @@ docs/powerbi.md           # Building the report in Power BI
 
 ### Staging Layer
 
-Raw IPEDS data cleaned and renamed for the 2020-2024 period:
+Raw IPEDS data cleaned and renamed for the 2020-2025 period:
 
 | Model                         | IPEDS Survey | Description                            |
 | ----------------------------- | ------------ | -------------------------------------- |
@@ -59,7 +59,7 @@ Analytics-ready tables for reporting across multiple years:
 | Model                    | Description                                                                               |
 | ------------------------ | ----------------------------------------------------------------------------------------- |
 | `dim_texas_institutions` | Institution dimension with all attributes                                                 |
-| `fct_student_outcomes`   | Multi-year fact table (2020-2024) combining completion, graduation, and retention metrics |
+| `fct_student_outcomes`   | Multi-year fact table (2020-2025) combining completion, graduation, and retention metrics |
 | `rpt_peer_comparison`    | Benchmark institutions against peer group averages                                        |
 | `rpt_equity_dashboard`   | HB8 equity gaps and completion equity indices                                             |
 
@@ -84,7 +84,7 @@ That installs everything you need: `dbt-duckdb`, `duckdb`, `pandas`, `plotly`,
 
 ### Build the data
 
-The raw IPEDS CSVs (2020-2024) are already committed under
+The raw IPEDS CSVs (2020-2025) are already committed under
 `texas_cc_benchmarking/seeds/`. dbt reads them directly as DuckDB views (via the
 `create_raw_ipeds_views` macro / `on-run-start` hook), so there is **no separate
 load step** — just build:
@@ -111,7 +111,7 @@ uv run dbt debug     # should print "All checks passed!"
 To re-download fresh IPEDS files into `seeds/`:
 
 ```bash
-uv run python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 --filter-texas
+uv run python scripts/download_ipeds.py --years 2020 2021 2022 2023 2024 2025 --filter-texas
 ```
 
 Then re-run `dbt build`.
@@ -133,6 +133,24 @@ at a different database file, set the `DUCKDB_PATH` environment variable.
 ### Key Features
 
 - **Multi-Year Analysis**: View trends across 2020-2024.
+
+### Year window
+
+The warehouse holds every year that has been downloaded; the dashboards show a
+narrower window. IPEDS releases completions (`C_A`), 12-month enrollment
+(`EFFY`), and the directory (`HD`) about a year ahead of graduation rates (`GR`),
+retention (`EF_D`), and financial aid (`SFA`), so `fct_student_outcomes`
+currently carries 2025 completions with no matching graduation or retention
+figures. Showing 2025 would leave three of the five tabs blank for that year, so
+the window stops at 2024.
+
+To move the window, bump `START_YEAR`/`END_YEAR` in both
+[dashboard/app.py](dashboard/app.py) and
+[dashboard/build_html.py](dashboard/build_html.py) — the year labels in the UI
+are derived from the data, so nothing else needs editing. To load a new year of
+raw data, download it and extend that family's range in
+[macros/create_raw_ipeds_views.sql](texas_cc_benchmarking/macros/create_raw_ipeds_views.sql),
+`_stg_sources.yml`, and the matching staging model's union.
 - **Multi-College Comparison**: Select and compare multiple institutions side-by-side.
 - **Metric Tabs**: Dedicated views for Graduation Rates, Retention, Completions, and Equity metrics.
 - **Slicer Sidebar**: Easy-to-use checkbox list for selecting institutions with search and "Select All" capabilities.
@@ -156,6 +174,11 @@ uv run python dashboard/build_html.py
 Double-click the result to open it. It has the same five tabs, college
 checkboxes, search, and blue/gray highlighting as the Streamlit app.
 
+The built file is **committed to the repo**, so anyone can grab
+[`dashboard/dist/texas_cc_dashboard.html`](dashboard/dist/texas_cc_dashboard.html)
+straight from GitHub and open it — no dbt, DuckDB, or Python needed. Re-run the
+build command above and commit the result whenever the marts change.
+
 Pass `--cdn` for a ~90 KB file that loads plotly.js from the CDN instead of
 inlining it — smaller, but it then requires internet access to draw the charts.
 Use `--out` to write somewhere else.
@@ -175,5 +198,7 @@ Copy `exports/` to the machine running Power BI Desktop. See
 create, DAX measures matching the dashboard cards, and a visual-by-visual
 mapping of the five tabs.
 
-Both `exports/` and `dashboard/dist/` are gitignored — they are build outputs,
-regenerated from `texas_cc.duckdb` any time.
+`exports/` is gitignored — it is a build output, regenerated from
+`texas_cc.duckdb` any time. `dashboard/dist/` is gitignored too, with a single
+exception: the standalone HTML dashboard is committed so it can be downloaded
+directly.
