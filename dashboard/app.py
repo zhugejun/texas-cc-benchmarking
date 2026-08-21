@@ -142,6 +142,65 @@ def load_institutions():
     return load_data("SELECT * FROM dim_texas_institutions")
 
 
+# ===================
+# HIGHLIGHT HELPERS
+# ===================
+HIGHLIGHT_COLOR = "#1d4ed8"   # strong blue for the focused college
+MUTED_COLOR = "#cbd5e1"       # gray for everything else
+
+
+def highlight_lines(fig, highlight):
+    """Color the highlighted college's line blue and gray out the rest."""
+    if not highlight:
+        return fig
+    for trace in fig.data:
+        if trace.name == highlight:
+            trace.update(
+                line=dict(color=HIGHLIGHT_COLOR, width=4),
+                marker=dict(color=HIGHLIGHT_COLOR, size=9),
+                opacity=1.0,
+                showlegend=True,
+            )
+        else:
+            trace.update(
+                line=dict(color=MUTED_COLOR, width=1.5),
+                marker=dict(color=MUTED_COLOR, size=4),
+                opacity=0.55,
+                showlegend=False,
+            )
+    # Draw the highlighted trace last so it sits on top of the gray ones.
+    fig.data = tuple(sorted(fig.data, key=lambda t: t.name == highlight))
+    return fig
+
+
+def highlight_bars(fig, highlight, axis="x"):
+    """Fade every bar that does not belong to the highlighted college."""
+    if not highlight:
+        return fig
+    for trace in fig.data:
+        categories = trace.x if axis == "x" else trace.y
+        if categories is None:
+            continue
+        trace.update(marker=dict(
+            opacity=[1.0 if c == highlight else 0.25 for c in categories]
+        ))
+    return fig
+
+
+def highlight_rows(df, highlight, column=None):
+    """Style a dataframe so the highlighted college's row stands out."""
+    styler = df.style
+    if not highlight:
+        return styler
+
+    def _row_style(row):
+        name = row[column] if column else row.name
+        css = "background-color: rgba(29, 78, 216, 0.18); font-weight: 700;" if name == highlight else ""
+        return [css] * len(row)
+
+    return styler.apply(_row_style, axis=1)
+
+
 # Load data
 try:
     outcomes = load_outcomes()
@@ -209,6 +268,18 @@ selected_colleges = [college for college in available_colleges if st.session_sta
 
 
 st.sidebar.markdown("---")
+
+# Highlight one college; every other college is drawn in gray
+st.sidebar.subheader("Highlight")
+highlight_choice = st.sidebar.selectbox(
+    "Highlight a college",
+    ["None"] + selected_colleges,
+    key="highlight_college",
+    help="The chosen college is drawn in blue; all others fade to gray.",
+)
+highlight_college = None if highlight_choice == "None" else highlight_choice
+
+st.sidebar.markdown("---")
 if st.sidebar.button("Refresh Data"):
     st.cache_data.clear()
     st.rerun()
@@ -228,7 +299,10 @@ filtered_data = outcomes[outcomes['INSTITUTION_NAME'].isin(selected_colleges)]
 # MAIN CONTENT
 # ===================
 st.title("Texas Community College Benchmarking")
-st.markdown(f"**Comparing {len(selected_colleges)} colleges across years 2020-2024**")
+subtitle = f"**Comparing {len(selected_colleges)} colleges across years 2020-2024**"
+if highlight_college:
+    subtitle += f" &nbsp;|&nbsp; Highlighting **{highlight_college}**"
+st.markdown(subtitle)
 
 # Main tabs for different metrics
 tab_overview, tab_graduation, tab_retention, tab_completion, tab_equity = st.tabs([
@@ -272,7 +346,8 @@ with tab_overview:
                            'Associate Degrees', 'Total Completions']
     display_data = display_data.sort_values('Graduation Rate', ascending=False)
     
-    st.dataframe(display_data, width="stretch", hide_index=True)
+    st.dataframe(highlight_rows(display_data, highlight_college, column='College'),
+                 width="stretch", hide_index=True)
     
     # Quick comparison bar chart
     st.subheader("Graduation Rate Comparison (2024)")
@@ -289,6 +364,14 @@ with tab_overview:
         color_continuous_scale='Blues'
     )
     fig.update_layout(height=max(400, len(chart_data) * 20), showlegend=False)  # Bar chart doesn't need legend
+    if highlight_college:
+        # Replace the continuous color scale with a flat blue/gray split
+        fig.update_traces(marker=dict(
+            color=[HIGHLIGHT_COLOR if n == highlight_college else MUTED_COLOR
+                   for n in chart_data['INSTITUTION_NAME']],
+            coloraxis=None,
+        ))
+        fig.update_layout(coloraxis_showscale=False)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
 
@@ -318,8 +401,9 @@ with tab_graduation:
     )
     fig.update_layout(
         height=500,
-        showlegend=(len(selected_colleges) <= 10)
+        showlegend=(len(selected_colleges) <= 10 or bool(highlight_college))
     )
+    highlight_lines(fig, highlight_college)
     fig.update_xaxes(dtick=1)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
@@ -337,6 +421,7 @@ with tab_graduation:
         color_discrete_sequence=px.colors.sequential.Blues_r
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
+    highlight_bars(fig, highlight_college)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
 
@@ -348,7 +433,7 @@ with tab_graduation:
     pivot.columns = [str(int(c)) for c in pivot.columns]
     if '2020' in pivot.columns and '2024' in pivot.columns:
         pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(1)
-    st.dataframe(pivot, width="stretch")
+    st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
 # ===================
@@ -376,8 +461,9 @@ with tab_retention:
     )
     fig.update_layout(
         height=500,
-        showlegend=(len(selected_colleges) <= 10)
+        showlegend=(len(selected_colleges) <= 10 or bool(highlight_college))
     )
+    highlight_lines(fig, highlight_college)
     fig.update_xaxes(dtick=1)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
@@ -395,6 +481,7 @@ with tab_retention:
         color_discrete_sequence=px.colors.sequential.Blues_r
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
+    highlight_bars(fig, highlight_college)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
 
@@ -406,7 +493,7 @@ with tab_retention:
     pivot.columns = [str(int(c)) for c in pivot.columns]
     if '2020' in pivot.columns and '2024' in pivot.columns:
         pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(1)
-    st.dataframe(pivot, width="stretch")
+    st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
 # ===================
@@ -434,8 +521,9 @@ with tab_completion:
     )
     fig.update_layout(
         height=500,
-        showlegend=(len(selected_colleges) <= 10)
+        showlegend=(len(selected_colleges) <= 10 or bool(highlight_college))
     )
+    highlight_lines(fig, highlight_college)
     fig.update_xaxes(dtick=1)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
@@ -453,6 +541,7 @@ with tab_completion:
         color_discrete_sequence=px.colors.sequential.Greens_r
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
+    highlight_bars(fig, highlight_college)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
 
@@ -473,8 +562,9 @@ with tab_completion:
     )
     fig.update_layout(
         height=500,
-        showlegend=(len(selected_colleges) <= 10)
+        showlegend=(len(selected_colleges) <= 10 or bool(highlight_college))
     )
+    highlight_lines(fig, highlight_college)
     fig.update_xaxes(dtick=1)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
@@ -487,7 +577,7 @@ with tab_completion:
     pivot.columns = [str(int(c)) for c in pivot.columns]
     if '2020' in pivot.columns and '2024' in pivot.columns:
         pivot['Change (2020-24)'] = (pivot['2024'] - pivot['2020']).round(0)
-    st.dataframe(pivot, width="stretch")
+    st.dataframe(highlight_rows(pivot, highlight_college), width="stretch")
 
 
 # ===================
@@ -541,6 +631,7 @@ with tab_equity:
         color_discrete_map={'Hispanic': '#3b82f6', 'Black': '#1e40af', 'White': '#94a3b8'}
     )
     fig.update_layout(height=450, xaxis_tickangle=-45)
+    highlight_bars(fig, highlight_college)
     fig.update_yaxes(rangemode='tozero')
     st.plotly_chart(fig, width="stretch")
 
@@ -561,6 +652,13 @@ with tab_equity:
             },
             color_discrete_sequence=['#3b82f6']
         )
+        if highlight_college:
+            fig.update_traces(marker=dict(
+                color=[HIGHLIGHT_COLOR if n == highlight_college else MUTED_COLOR
+                       for n in gap_data['INSTITUTION_NAME']],
+                size=[14 if n == highlight_college else 7
+                      for n in gap_data['INSTITUTION_NAME']],
+            ))
         fig.add_hline(y=0, line_dash="dash", line_color="gray")
         fig.add_vline(x=0, line_dash="dash", line_color="gray")
         fig.update_layout(height=450)
@@ -576,4 +674,5 @@ with tab_equity:
     ]].copy()
     equity_display.columns = ['College', 'Hispanic Rate', 'Black Rate', 'White Rate', 
                               'Hispanic Gap', 'Black Gap']
-    st.dataframe(equity_display, width="stretch", hide_index=True)
+    st.dataframe(highlight_rows(equity_display, highlight_college, column='College'),
+                 width="stretch", hide_index=True)
